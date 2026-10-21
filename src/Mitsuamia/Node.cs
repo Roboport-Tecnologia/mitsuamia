@@ -87,7 +87,45 @@ public abstract unsafe class Node
 
     // Layout, every node's. Lengths are in points; null is auto.
 
-    private float? _width, _height;
+    private float? _width, _height, _minWidth, _minHeight, _maxWidth, _maxHeight;
+
+    /// <summary>The least the layout gives it; null: none.</summary>
+    public float? MinWidth
+    {
+        set
+        {
+            _minWidth = value;
+            Native.Check(Native.SetMinSize(Id, _minWidth ?? -1, _minHeight ?? -1));
+        }
+    }
+
+    public float? MinHeight
+    {
+        set
+        {
+            _minHeight = value;
+            Native.Check(Native.SetMinSize(Id, _minWidth ?? -1, _minHeight ?? -1));
+        }
+    }
+
+    /// <summary>The most the layout gives it; null: none.</summary>
+    public float? MaxWidth
+    {
+        set
+        {
+            _maxWidth = value;
+            Native.Check(Native.SetMaxSize(Id, _maxWidth ?? -1, _maxHeight ?? -1));
+        }
+    }
+
+    public float? MaxHeight
+    {
+        set
+        {
+            _maxHeight = value;
+            Native.Check(Native.SetMaxSize(Id, _maxWidth ?? -1, _maxHeight ?? -1));
+        }
+    }
 
     public float? Width
     {

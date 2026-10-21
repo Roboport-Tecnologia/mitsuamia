@@ -119,6 +119,8 @@ public sealed class Text : Node
 
     public string Value { set => Native.Check(Native.SetText(Id, Native.TextProp.Text, value)); }
     public TextStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.TextStyle, (uint)value)); }
+
+    public Color Color { set => Native.Check(value.Set(Id)); }
 }
 
 /// <summary>Takes an <see cref="ICommand"/>, as Avalonia's and WPF's

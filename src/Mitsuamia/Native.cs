@@ -256,6 +256,18 @@ internal static unsafe partial class Native
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetEnum(uint node, EnumProp prop, uint value);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_color")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetColor(uint node, uint prop, uint semantic, byte r, byte g, byte b, byte a);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_min_size")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetMinSize(uint node, float width, float height);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_max_size")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetMaxSize(uint node, float width, float height);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_hidden")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetHidden(uint node, [MarshalAs(UnmanagedType.U1)] bool hidden);

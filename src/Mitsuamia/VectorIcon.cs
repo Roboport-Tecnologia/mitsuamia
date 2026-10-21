@@ -31,6 +31,9 @@ public sealed class Icon : Node
     /// icon on its own.</summary>
     public float Size { set => Native.Check(Native.SetNumber(Id, Native.NumberProp.IconSize, value)); }
 
+    /// <summary>Its colour, in place of the one the platform gives icons.</summary>
+    public Color Color { set => Native.Check(value.Set(Id)); }
+
     /// <summary>What it stands for, read by assistive technology; without
     /// one it's decorative.</summary>
     public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
