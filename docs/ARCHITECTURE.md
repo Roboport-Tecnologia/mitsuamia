@@ -97,9 +97,22 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
   the welcome page's groups, changed files), text with inline runs (116
   `Run`s), popovers (`Popup`, `MenuFlyout`).
 - **In mitsuami-extras:** a resizable split (WinUI 3 has no native
-  splitter); a code view for diffs, blame and conflicts (GtkSourceView and
-  KTextEditor are native, macOS and Windows have none); the commit graph and
-  charts, drawn; the avatar.
+  splitter); the commit graph and charts, drawn; the avatar.
+- **The code view is an embedded bemtvi** (`../nxvim`), for diffs, blame,
+  the merge conflict editor and the commit message, on every platform.
+  `bemtvi-gui` already runs on mitsuami (a `GpuSurface` painted with wgpu);
+  what embedding needs:
+  - a widget, not a window: an editor surface several of which share a
+    window (a side-by-side diff, the conflict editor's three panes), from a
+    crate in bemtvi's repository with a C ABI of its own;
+  - the server in process, one per app, with a session per surface;
+  - SourceGit's diff model (`Models.TextDiff`: lines, their kinds, old and
+    new numbers) shown as buffers with extmarks, so SourceGit's diff options
+    and staging by line keep working, and the selection reported back;
+  - a modeless mode for people who don't use vim (bemtvi has none yet), and
+    read-only buffers for diffs and blame;
+  - accessibility: a `GpuSurface` shows screen readers nothing, so the
+    surface needs to expose its text.
 - **Icons:** SourceGit's own, its 171 vector icons (`Resources/Icons.axaml`,
   path data on a 1024 grid), not the platforms' sets. Every platform shows
   an app's vector icon in its icon colour natively: WinUI's `PathIcon` takes
