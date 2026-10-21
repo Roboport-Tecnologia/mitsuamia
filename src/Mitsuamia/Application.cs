@@ -20,6 +20,10 @@ public static unsafe class Application
 
     public static bool IsUiThread => Thread.CurrentThread == _uiThread;
 
+    /// <summary>Whether <see cref="Run"/> has started the run loop, so
+    /// <see cref="Post"/> has somewhere to post to.</summary>
+    public static bool IsRunning => _uiThread is not null;
+
     public static void Run(string id, string name, Action setup)
     {
         _setup = setup;

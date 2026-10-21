@@ -34,8 +34,8 @@ internal static unsafe partial class Native
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel }
     public enum BoolProp : uint { Enabled, Checked }
-    public enum NumberProp : uint { Number }
-    public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle }
+    public enum NumberProp : uint { Number, EstimatedRowHeight }
+    public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle }
     public enum EventKind : uint { Click, Changed, Submit, FocusIn, FocusOut, CloseRequested }
     public enum ValueKind : uint { None, Text, Bool, Number, Index }
 
@@ -49,6 +49,74 @@ internal static unsafe partial class Native
         [MarshalAs(UnmanagedType.U1)] public bool Flag;
         public double Number;
         public ulong Index;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Str
+    {
+        public byte* Ptr;
+        public nuint Len;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct ListCallbacks
+    {
+        public delegate* unmanaged[Cdecl]<nint, uint, byte*, nuint, uint> BuildRow;
+        public delegate* unmanaged[Cdecl]<nint, uint, uint, void> ReleaseRow;
+        public delegate* unmanaged[Cdecl]<nint, uint, void> SelectionChanged;
+        public delegate* unmanaged[Cdecl]<nint, uint, byte*, nuint, void> Activated;
+        public nint User;
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_create_list")]
+    public static partial uint CreateList(ListCallbacks callbacks);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_list_set_keys")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool ListSetKeys(uint list, Str* keys, nuint count);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_list_set_selected")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool ListSetSelected(uint list, Str* keys, nuint count);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_list_selected_count")]
+    public static partial nuint ListSelectedCount(uint list);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_list_selected_key")]
+    private static partial nuint ListSelectedKey(uint list, nuint index, byte** ptr);
+
+    public static bool ListSetKeys(uint list, IReadOnlyList<string> keys) => WithStrs(keys, (p, n) => ListSetKeys(list, p, n));
+    public static bool ListSetSelected(uint list, IReadOnlyList<string> keys) => WithStrs(keys, (p, n) => ListSetSelected(list, p, n));
+
+    public static string ListSelectedKey(uint list, nuint index)
+    {
+        byte* ptr;
+        var len = ListSelectedKey(list, index, &ptr);
+        return Utf8(ptr, len);
+    }
+
+    private delegate bool StrsCall(Str* strs, nuint count);
+
+    /// <summary>Passes strings as UTF-8, pinned for the call.</summary>
+    private static bool WithStrs(IReadOnlyList<string> values, StrsCall call)
+    {
+        var bytes = new byte[values.Count][];
+        var handles = new GCHandle[values.Count];
+        var strs = new Str[values.Count];
+        try
+        {
+            for (var i = 0; i < values.Count; i++)
+            {
+                bytes[i] = Encoding.UTF8.GetBytes(values[i]);
+                handles[i] = GCHandle.Alloc(bytes[i], GCHandleType.Pinned);
+                strs[i] = new Str { Ptr = (byte*)handles[i].AddrOfPinnedObject(), Len = (nuint)bytes[i].Length };
+            }
+            fixed (Str* p = strs) return call(p, (nuint)strs.Length);
+        }
+        finally
+        {
+            foreach (var h in handles) if (h.IsAllocated) h.Free();
+        }
     }
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_last_error")]

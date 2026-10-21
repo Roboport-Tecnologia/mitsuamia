@@ -71,7 +71,7 @@ public abstract unsafe class Node
     }
 
     /// <summary>mitsuami destroyed it (and its children) itself.</summary>
-    private protected void Forget()
+    internal void Forget()
     {
         foreach (var child in _children) child.Forget();
         _children.Clear();
