@@ -71,6 +71,26 @@ public sealed class Window : Node
         set => Add(value);
     }
 
+    /// <summary>Captures its content offscreen, as the platform draws it, to
+    /// a PNG file in pixels: for tests and tools, with no screen-recording
+    /// permission. True if it was written.</summary>
+    public unsafe Task<bool> CapturePng(string path)
+    {
+        var done = new TaskCompletionSource<bool>();
+        var user = System.Runtime.InteropServices.GCHandle.ToIntPtr(System.Runtime.InteropServices.GCHandle.Alloc(done));
+        Native.Check(Native.CapturePng(Id, path, &Captured, user));
+        return done.Task;
+    }
+
+    [System.Runtime.InteropServices.UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static void Captured(nint user, byte ok)
+    {
+        var handle = System.Runtime.InteropServices.GCHandle.FromIntPtr(user);
+        var done = (TaskCompletionSource<bool>)handle.Target!;
+        handle.Free();
+        done.SetResult(ok != 0);
+    }
+
     /// <summary>The user closed it; mitsuami has destroyed it.</summary>
     public event Action? Closed;
 

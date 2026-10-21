@@ -98,6 +98,17 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
   repository view in Avalonia. They become window-modal sheets and dialogs
   (mitsuami §14.1), as each platform's Git clients show them.
 - **The launcher's repository tabs** are mitsuami's document tabs (§14.13).
+- **Toolbars stay upstream's band,** not the window's toolbar. A window's
+  toolbar is the native place for a page's buttons, but the repository
+  page's band has far more buttons than a toolbar holds (and toolbars only
+  share trailing items), so both pages keep upstream's 36-point band:
+  borderless icon buttons in 32-point slots, each icon padded in its view
+  box to upstream's size and nudge (`Icons.Get(key, size, down)`), so they
+  line up as upstream's do.
+- **Captures for checking the look:** `SOURCEGIT_CAPTURE=<file.png>`
+  (with `SOURCEGIT_CAPTURE_TAB=new` for a welcome page) writes the main
+  window's content to a PNG once it settles, through mitsuami's offscreen
+  capture, which needs no screen-recording permission.
 
 ### What it needs
 

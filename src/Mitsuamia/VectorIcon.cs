@@ -10,7 +10,14 @@ public readonly record struct ViewBox(float X, float Y, float Width, float Heigh
 /// it takes their colour and follows dark mode. Without a view box, the path
 /// fills its own bounds, as a XAML <c>Path</c> with uniform stretch does.
 /// </summary>
-public sealed record VectorIcon(string Data, ViewBox? ViewBox = null);
+public sealed record VectorIcon(string Data, ViewBox? ViewBox = null)
+{
+    /// <summary>The bounds of the path's shapes, in its own units; null if
+    /// the data doesn't parse. To pad an icon in a view box, so it shows
+    /// smaller than its square, or off its centre, as icon sets balance
+    /// their shapes.</summary>
+    public static ViewBox? Bounds(string data) => Native.VectorIconBounds(data);
+}
 
 /// <summary>An icon on its own: the platform's, by name, or the app's.</summary>
 public sealed class Icon : Node

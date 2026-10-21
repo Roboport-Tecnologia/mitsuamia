@@ -146,6 +146,29 @@ internal static unsafe partial class Native
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool SetVectorIcon(uint node, Str data, float x, float y, float width, float height);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_capture_png")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool CapturePng(uint window, Str path, delegate* unmanaged[Cdecl]<nint, byte, void> done, nint user);
+
+    public static bool CapturePng(uint window, string path, delegate* unmanaged[Cdecl]<nint, byte, void> done, nint user)
+    {
+        string[] texts = [path];
+        return WithStrs(texts, (p, _) => CapturePng(window, p[0], done, user));
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_vector_icon_bounds")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool VectorIconBounds(Str data, float* bounds);
+
+    public static ViewBox? VectorIconBounds(string data)
+    {
+        var bounds = stackalloc float[4];
+        string[] texts = [data];
+        var b = bounds;
+        if (!WithStrs(texts, (d, _) => VectorIconBounds(d[0], b))) return null;
+        return new ViewBox(bounds[0], bounds[1], bounds[2], bounds[3]);
+    }
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_create_vector_icon")]
     private static partial uint CreateVectorIcon(Str data, float x, float y, float width, float height);
 
