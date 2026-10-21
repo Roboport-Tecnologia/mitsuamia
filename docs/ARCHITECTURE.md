@@ -138,6 +138,11 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
 1. **Proof of concept:** the C ABI in mitsuami, the C# layer, the MVVM bridge
    and the dispatcher, on macOS. SourceGit's `Welcome` page with its real
    view model.
+   - Done: `samples/Clone`, a form on a CommunityToolkit.Mvvm view model,
+     ran on AppKit and was checked by eye (2026-10-21): typing a URL
+     enables the button through `CanExecute`, and the command's
+     background work reports back on the UI thread. Windows and Linux
+     only type-check, on mitsuami's side.
 2. **The launcher:** welcome page, repository tabs, opening a repository,
    clone, preferences. Brings the tree, the first popups and the app's icons.
 3. **The repository view:** history (`Table` and the drawn graph), local
