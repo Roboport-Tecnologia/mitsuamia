@@ -212,3 +212,64 @@ public sealed class SearchInput : TextField
         if (e.Kind == Native.EventKind.Search) Search?.Invoke(Native.Utf8(e.Text, e.TextLen));
     }
 }
+
+public enum DocumentTabsStyle : uint { Automatic, Strip, Window, TitleRow }
+
+/// <summary>
+/// Tabs for the documents an app has open, as a browser's: titles only, the
+/// app shows the chosen document itself. Where they show is the platform's
+/// (<see cref="DocumentTabsStyle.Automatic"/>): the title bar on macOS and
+/// Windows, a strip on GNOME and KDE.
+/// </summary>
+public sealed class DocumentTabs : Node
+{
+    public DocumentTabs() : base(Native.Kind.DocumentTabs) { }
+
+    public IReadOnlyList<string> Titles
+    {
+        set => Native.Check(Native.SetStrings(Id, Native.StringsProp.TabTitles, value));
+    }
+
+    /// <summary>The chosen tab; -1 for none.</summary>
+    public int SelectedIndex { set => Native.Check(Native.SetIndex(Id, Native.IndexProp.SelectedIndex, value)); }
+
+    public bool Closable { set => Native.Check(Native.SetBool(Id, Native.BoolProp.TabsClosable, value)); }
+    public bool Reorderable { set => Native.Check(Native.SetBool(Id, Native.BoolProp.TabsReorderable, value)); }
+    public bool NewTabButton { set => Native.Check(Native.SetBool(Id, Native.BoolProp.NewTabButton, value)); }
+
+    public DocumentTabsStyle Style
+    {
+        set => Native.Check(Native.SetEnum(Id, Native.EnumProp.DocumentTabsStyle, (uint)value));
+    }
+
+    /// <summary>The user chose a tab: its index.</summary>
+    public event Action<int>? Chosen;
+
+    /// <summary>The user asked to close a tab. It stays until the app
+    /// takes it away (new titles).</summary>
+    public event Action<int>? CloseRequested;
+
+    /// <summary>The user moved a tab, which shows there already: from, to.</summary>
+    public event Action<int, int>? Moved;
+
+    public event Action? NewTabRequested;
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        switch (e.Kind)
+        {
+            case Native.EventKind.Changed when e.ValueKind == Native.ValueKind.Index:
+                Chosen?.Invoke((int)e.Index);
+                break;
+            case Native.EventKind.TabCloseRequested:
+                CloseRequested?.Invoke((int)e.Index);
+                break;
+            case Native.EventKind.TabMoved:
+                Moved?.Invoke((int)e.Index, (int)e.To);
+                break;
+            case Native.EventKind.NewTabRequested:
+                NewTabRequested?.Invoke();
+                break;
+        }
+    }
+}

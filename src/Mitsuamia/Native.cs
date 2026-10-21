@@ -29,14 +29,19 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs,
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel }
-    public enum BoolProp : uint { Enabled, Checked }
+    public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton }
     public enum NumberProp : uint { Number, EstimatedRowHeight }
-    public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle }
-    public enum EventKind : uint { Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search }
+    public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle }
+    public enum StringsProp : uint { TabTitles }
+    public enum IndexProp : uint { SelectedIndex }
+    public enum EventKind : uint
+    {
+        Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search, TabCloseRequested, TabMoved, NewTabRequested,
+    }
     public enum ValueKind : uint { None, Text, Bool, Number, Index }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -49,6 +54,7 @@ internal static unsafe partial class Native
         [MarshalAs(UnmanagedType.U1)] public bool Flag;
         public double Number;
         public ulong Index;
+        public ulong To;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -159,6 +165,17 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_number")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetNumber(uint node, NumberProp prop, double value);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_strings")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetStrings(uint node, StringsProp prop, Str* values, nuint count);
+
+    public static bool SetStrings(uint node, StringsProp prop, IReadOnlyList<string> values) =>
+        WithStrs(values, (p, n) => SetStrings(node, prop, p, n));
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_index")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetIndex(uint node, IndexProp prop, nint index);
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_enum")]
     [return: MarshalAs(UnmanagedType.U1)]

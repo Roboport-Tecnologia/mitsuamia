@@ -31,26 +31,26 @@ public static class Bind
 
     /// <summary>A text field's text, both ways.</summary>
     public static void Value(TextInput input, INotifyPropertyChanged source, string property, Func<string?> get,
-        Action<string> set)
+        Action<string> set, Node? owner = null)
     {
-        OneWay(source, property, get, v => input.Value = v ?? "");
+        OneWay(source, property, get, v => input.Value = v ?? "", owner ?? input);
         input.Changed += set;
     }
 
     /// <summary>A search field's text, both ways: the property follows the
     /// field when the platform searches, not at every keystroke.</summary>
     public static void Search(SearchInput input, INotifyPropertyChanged source, string property, Func<string?> get,
-        Action<string> set)
+        Action<string> set, Node? owner = null)
     {
-        OneWay(source, property, get, v => input.Value = v ?? "");
+        OneWay(source, property, get, v => input.Value = v ?? "", owner ?? input);
         input.Search += set;
     }
 
     /// <summary>A checkbox's state, both ways.</summary>
     public static void Checked(Checkbox box, INotifyPropertyChanged source, string property, Func<bool> get,
-        Action<bool> set)
+        Action<bool> set, Node? owner = null)
     {
-        OneWay(source, property, get, v => box.IsChecked = v);
+        OneWay(source, property, get, v => box.IsChecked = v, owner ?? box);
         box.Changed += set;
     }
 }

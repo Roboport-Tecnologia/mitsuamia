@@ -113,9 +113,22 @@ public abstract unsafe class ListView : Node
 /// Avalonia's <c>AvaloniaList</c>). <paramref name="row"/> builds an item's
 /// row when the platform shows it, as a <c>DataTemplate</c> does.
 /// </summary>
-public sealed class ListView<T>(Func<T, string> key, Func<T, Node> row, SelectionMode mode = SelectionMode.Single)
-    : ListView(mode) where T : class
+public sealed class ListView<T> : ListView where T : class
 {
+    private readonly Func<T, string> key;
+    private readonly Func<T, Node> row;
+
+    public ListView(Func<T, string> key, Func<T, Node> row, SelectionMode mode = SelectionMode.Single) : base(mode)
+    {
+        this.key = key;
+        this.row = row;
+        // The items usually outlive the list: stop following them with it.
+        Forgotten += () =>
+        {
+            if (_items is INotifyCollectionChanged items) items.CollectionChanged -= ItemsChanged;
+        };
+    }
+
     private readonly Dictionary<string, T> _byKey = [];
     private IReadOnlyList<T> _items = [];
     private IReadOnlyList<T> _selected = [];
