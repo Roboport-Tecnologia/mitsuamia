@@ -1,0 +1,21 @@
+<Project>
+  <!-- AppKit gives an app its current controls (macOS 26's design) only
+       when its executable was linked against the current SDK; older ones
+       get the old controls, for compatibility. .NET's app host comes
+       prebuilt against an older SDK, so it's marked as linked against the
+       installed one, then signed again (ad hoc). NativeAOT links the
+       executable here, with the installed SDK, so it needs none of this. -->
+  <PropertyGroup>
+    <MitsuamiaMinimumMacOS Condition="'$(MitsuamiaMinimumMacOS)' == ''">12.0</MitsuamiaMinimumMacOS>
+  </PropertyGroup>
+
+  <Target Name="MitsuamiaMarkAppHost" AfterTargets="Build"
+          Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(UseAppHost)' != 'false' and '$(OutputType)' != 'Library' and '$(PublishAot)' != 'true'">
+    <Exec Command="&quot;$(MSBuildThisFileDirectory)mark-apphost.sh&quot; &quot;$(TargetDir)$(AssemblyName)&quot; $(MitsuamiaMinimumMacOS)" />
+  </Target>
+
+  <Target Name="MitsuamiaMarkPublishedAppHost" AfterTargets="Publish"
+          Condition="$([MSBuild]::IsOSPlatform('OSX')) and '$(UseAppHost)' != 'false' and '$(OutputType)' != 'Library' and '$(PublishAot)' != 'true'">
+    <Exec Command="&quot;$(MSBuildThisFileDirectory)mark-apphost.sh&quot; &quot;$(PublishDir)$(AssemblyName)&quot; $(MitsuamiaMinimumMacOS)" />
+  </Target>
+</Project>

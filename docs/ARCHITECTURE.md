@@ -47,6 +47,13 @@
   GTK).
 - **Packaging:** a NuGet package with a native library per runtime
   identifier; Linux has two, GTK and Kirigami.
+- **macOS's current controls need the current SDK.** AppKit gives an app
+  macOS 26's controls only if its executable was linked against the 26
+  SDK; .NET's prebuilt app host is linked against 15.5, so SourceGit first
+  showed macOS 15's controls. `buildTransitive/Mitsuamia.targets` marks the
+  app host after each build and publish as linked against the installed
+  SDK (`vtool`) and signs it again ad hoc. NativeAOT links the executable
+  with the installed SDK, so it needs nothing.
 
 ## 3. The XAML converter
 

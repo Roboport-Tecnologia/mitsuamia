@@ -9,4 +9,8 @@
     <Description>C# bindings for mitsuami: native controls on every platform</Description>
   </PropertyGroup>
 
+  <ItemGroup>
+    <None Include="buildTransitive/**" Pack="true" PackagePath="buildTransitive" />
+  </ItemGroup>
+
 </Project>
