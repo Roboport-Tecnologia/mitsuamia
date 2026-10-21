@@ -38,10 +38,67 @@ public abstract unsafe class Node
     {
         if (GCHandle.FromIntPtr(user).Target is not Node node) return;
         var ev = *e;
-        Application.Guard(() => node.OnEvent(ev));
+        Application.Guard(() => node.OnCommonEvent(ev));
     }
 
     private protected virtual void OnEvent(Native.Event e) { }
+
+    // What every node takes: its context menu's items.
+    private Dictionary<uint, Action>? _menuActions;
+
+    /// <summary>Its context menu, shown on the platform's own gestures
+    /// (right-click, Control-click, long press, the Menu key); empty: none.
+    /// A child without one shows its container's.</summary>
+    public IReadOnlyList<MenuEntry> ContextMenu
+    {
+        set
+        {
+            var flat = new List<(uint, uint, string, bool, uint)>();
+            var actions = new Dictionary<uint, Action>();
+            void Flatten(IEnumerable<MenuEntry> entries)
+            {
+                foreach (var entry in entries)
+                {
+                    switch (entry)
+                    {
+                        case MenuItem item:
+                            var id = (uint)actions.Count + 1;
+                            actions[id] = item.Action;
+                            uint check = item.Checked switch
+                            {
+                                null => 0,
+                                bool on when item.Radio => on ? 4u : 3u,
+                                bool on => on ? 2u : 1u,
+                            };
+                            flat.Add((0, id, item.Title, item.Enabled, check));
+                            break;
+                        case MenuSeparator:
+                            flat.Add((1, 0, "", true, 0));
+                            break;
+                        case Submenu sub:
+                            flat.Add((2, 0, sub.Title, true, 0));
+                            Flatten(sub.Entries);
+                            flat.Add((3, 0, "", true, 0));
+                            break;
+                    }
+                }
+            }
+            Flatten(value);
+            Native.Check(Native.SetContextMenu(Id, flat));
+            _menuActions = actions;
+        }
+    }
+
+    /// <summary>What tests find it by.</summary>
+    public string TestId { set => Native.Check(Native.SetText(Id, Native.TextProp.TestId, value)); }
+
+    private void OnCommonEvent(Native.Event e)
+    {
+        if (e.Kind == Native.EventKind.ContextMenuItem && _menuActions?.GetValueOrDefault((uint)e.Index) is { } action)
+            action();
+        else
+            OnEvent(e);
+    }
 
     private protected void Add(Node child, int? index = null)
     {

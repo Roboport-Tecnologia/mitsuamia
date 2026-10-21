@@ -32,7 +32,7 @@ internal static unsafe partial class Native
         PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon,
     }
 
-    public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon }
+    public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId }
     public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly, Header }
     public enum NumberProp : uint { Number, EstimatedRowHeight, IconSize }
     public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle, HeaderEdge }
@@ -41,6 +41,7 @@ internal static unsafe partial class Native
     public enum EventKind : uint
     {
         Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search, TabCloseRequested, TabMoved, NewTabRequested,
+        ContextMenuItem, DropHover, FilesDropped,
     }
     public enum ValueKind : uint { None, Text, Bool, Number, Index }
 
@@ -255,6 +256,45 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_enum")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetEnum(uint node, EnumProp prop, uint value);
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct MenuEntry
+    {
+        public uint Kind;
+        public uint Id;
+        public Str Title;
+        public byte Enabled;
+        public uint Check;
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_context_menu")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetContextMenu(uint node, MenuEntry* entries, nuint count);
+
+    /// <summary>Entries with their titles; the titles are passed as UTF-8,
+    /// pinned for the call.</summary>
+    public static bool SetContextMenu(uint node, IReadOnlyList<(uint Kind, uint Id, string Title, bool Enabled, uint Check)> entries)
+    {
+        var titles = entries.Select(e => e.Title).ToArray();
+        return WithStrs(titles, (strs, _) =>
+        {
+            var native = new MenuEntry[entries.Count];
+            for (var i = 0; i < native.Length; i++)
+            {
+                var e = entries[i];
+                native[i] = new MenuEntry { Kind = e.Kind, Id = e.Id, Title = strs[i], Enabled = (byte)(e.Enabled ? 1 : 0), Check = e.Check };
+            }
+            fixed (MenuEntry* p = native) return SetContextMenu(node, p, (nuint)native.Length);
+        });
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_file_drop")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetFileDrop(uint node, [MarshalAs(UnmanagedType.U1)] bool folders,
+        [MarshalAs(UnmanagedType.U1)] bool anyFile, Str* extensions, nuint count);
+
+    public static bool SetFileDrop(uint node, bool folders, bool anyFile, IReadOnlyList<string> extensions) =>
+        WithStrs(extensions, (p, n) => SetFileDrop(node, folders, anyFile, p, n));
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_color")]
     [return: MarshalAs(UnmanagedType.U1)]

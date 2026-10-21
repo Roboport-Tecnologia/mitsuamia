@@ -11,6 +11,13 @@ public enum ButtonStyle : uint { Automatic, Bordered, Borderless }
 
 public enum HeaderEdge : uint { Automatic, Soft, Hard }
 
+/// <summary>What a container takes when dropped: folders, and files with
+/// these extensions (without the dot), or any file with none given.</summary>
+public sealed record FileDrop(bool Folders, IReadOnlyList<string>? Extensions = null)
+{
+    public static FileDrop OnlyFolders { get; } = new(true, []);
+}
+
 /// <summary>A flexbox container, a column by default. Children go in with a
 /// collection initializer: <c>new Column { a, b }</c>.</summary>
 public class Container : Node, IEnumerable<Node>
@@ -38,6 +45,34 @@ public class Container : Node, IEnumerable<Node>
     /// <summary>How a header meets what scrolls under it, on macOS 26.1 and
     /// later.</summary>
     public HeaderEdge HeaderEdge { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.HeaderEdge, (uint)value)); }
+
+    /// <summary>Takes folders and files dropped on it from the platform's
+    /// file manager: see <see cref="FileDrop"/>. Not reachable without a
+    /// pointer, so offer another way too.</summary>
+    public FileDrop? FileDrop
+    {
+        set => Native.Check(Native.SetFileDrop(Id, value?.Folders ?? false, value is { Extensions: null },
+            value?.Extensions ?? []));
+    }
+
+    /// <summary>Files it takes are over it, or have left: for a highlight.</summary>
+    public event Action<bool>? DropHover;
+
+    /// <summary>The paths dropped on it that it takes.</summary>
+    public event Action<IReadOnlyList<string>>? FilesDropped;
+
+    private protected override unsafe void OnEvent(Native.Event e)
+    {
+        switch (e.Kind)
+        {
+            case Native.EventKind.DropHover:
+                DropHover?.Invoke(e.Flag);
+                break;
+            case Native.EventKind.FilesDropped:
+                FilesDropped?.Invoke(Native.Utf8(e.Text, e.TextLen).Split('\0', StringSplitOptions.RemoveEmptyEntries));
+                break;
+        }
+    }
 
     public IEnumerator<Node> GetEnumerator() => Children.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
