@@ -71,7 +71,7 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
 | `Commands` (git), `Models`, `AI` | ~12k lines | Kept. `Commands` doesn't use Avalonia |
 | `ViewModels` | 136 files, ~22k lines | Kept, with small changes |
 | `Views` | 148 `.axaml` (18k lines), 183 `.cs` (27k lines) | Replaced |
-| `Resources` (themes, styles, icons) | 17k lines of `.axaml` | Dropped; icons mapped |
+| `Resources` (themes, styles, icons) | 17k lines of `.axaml` | Dropped, except its icons |
 
 - **View models use Avalonia** in 45 files, mostly for
   `Avalonia.Threading` (28, the dispatcher), `Avalonia.Collections` (19,
@@ -100,8 +100,12 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
   splitter); a code view for diffs, blame and conflicts (GtkSourceView and
   KTextEditor are native, macOS and Windows have none); the commit graph and
   charts, drawn; the avatar.
-- **Icons:** the themes' vector icons mapped to SF Symbols, Segoe Fluent and
-  freedesktop names.
+- **Icons:** SourceGit's own, its 171 vector icons (`Resources/Icons.axaml`,
+  path data on a 1024 grid), not the platforms' sets. Every platform shows
+  an app's vector icon in its icon colour natively: WinUI's `PathIcon` takes
+  the same path data, GTK recolours symbolic SVGs, Kirigami's `Icon` an SVG
+  mask, AppKit template images. So it's an addition to mitsuami's `Icon`
+  (an icon the app gives, next to named ones), not an extra.
 
 ## 5. Plan
 
@@ -109,12 +113,18 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
    and the dispatcher, on macOS. SourceGit's `Welcome` page with its real
    view model.
 2. **The launcher:** welcome page, repository tabs, opening a repository,
-   clone, preferences. Brings the tree, the first popups and the icon map.
+   clone, preferences. Brings the tree, the first popups and the app's icons.
 3. **The repository view:** history (`Table` and the drawn graph), local
    changes, committing, branches, the split.
 4. **Diffs, blame and conflicts:** the code view, the largest single piece.
 5. **The remaining popups and windows,** the converter making the first pass.
 
-The first question step 1 answers: whether the core's data-driven layer is
-enough for the C ABI, or whether it has to go through `mitsuami-widgets`
-(widgets' accessibility defaults, `absorb` for their `Changed` events).
+**The C ABI sits on the core.** mitsuami's widgets are thin wrappers over
+the core's `Element` (a kind, props, style, handlers, children), and the
+core keeps `Changed` events' values itself (`absorb`, in `ui/pipeline.rs`).
+The ABI drives `Ui` directly: `create(kind, props)`, `set_prop`,
+`update_style`, `append_child`, `on_event`, `destroy`, and a window's
+`create_window`. What's more than props gets entry points of its own:
+lists' and tables' rows (asked for as they scroll), menus, tabs, and
+mitsuami's reactive `Show` and `For`, which C# replaces with its own
+collection changes.
