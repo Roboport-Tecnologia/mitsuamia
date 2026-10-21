@@ -37,6 +37,15 @@ public static class Bind
         input.Changed += set;
     }
 
+    /// <summary>A search field's text, both ways: the property follows the
+    /// field when the platform searches, not at every keystroke.</summary>
+    public static void Search(SearchInput input, INotifyPropertyChanged source, string property, Func<string?> get,
+        Action<string> set)
+    {
+        OneWay(source, property, get, v => input.Value = v ?? "");
+        input.Search += set;
+    }
+
     /// <summary>A checkbox's state, both ways.</summary>
     public static void Checked(Checkbox box, INotifyPropertyChanged source, string property, Func<bool> get,
         Action<bool> set)

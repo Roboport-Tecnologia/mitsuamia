@@ -148,11 +148,12 @@ public sealed class Checkbox : Node
     }
 }
 
-public sealed class TextInput : Node
+/// <summary>What text fields share: their text, placeholder and name.</summary>
+public abstract class TextField : Node
 {
     private string _value = "";
 
-    public TextInput() : base(Native.Kind.TextInput) { }
+    private protected TextField(Native.Kind kind) : base(kind) { }
 
     public string Placeholder { set => Native.Check(Native.SetText(Id, Native.TextProp.Placeholder, value)); }
 
@@ -174,21 +175,40 @@ public sealed class TextInput : Node
     /// <summary>The user changed the text.</summary>
     public event Action<string>? Changed;
 
+    private protected override unsafe void OnEvent(Native.Event e)
+    {
+        if (e.Kind != Native.EventKind.Changed || e.ValueKind != Native.ValueKind.Text) return;
+        // The native field already shows it: only remember it.
+        _value = Native.Utf8(e.Text, e.TextLen);
+        Changed?.Invoke(_value);
+    }
+}
+
+public sealed class TextInput : TextField
+{
+    public TextInput() : base(Native.Kind.TextInput) { }
+
     /// <summary>The user pressed Return.</summary>
     public event Action? Submit;
 
+    private protected override void OnEvent(Native.Event e)
+    {
+        base.OnEvent(e);
+        if (e.Kind == Native.EventKind.Submit) Submit?.Invoke();
+    }
+}
+
+/// <summary>The platform's search field. It searches when the platform
+/// does: after a pause in typing, on Return, when cleared.</summary>
+public sealed class SearchInput : TextField
+{
+    public SearchInput() : base(Native.Kind.SearchInput) { }
+
+    public event Action<string>? Search;
+
     private protected override unsafe void OnEvent(Native.Event e)
     {
-        switch (e.Kind)
-        {
-            case Native.EventKind.Changed when e.ValueKind == Native.ValueKind.Text:
-                // The native field already shows it: only remember it.
-                _value = Native.Utf8(e.Text, e.TextLen);
-                Changed?.Invoke(_value);
-                break;
-            case Native.EventKind.Submit:
-                Submit?.Invoke();
-                break;
-        }
+        base.OnEvent(e);
+        if (e.Kind == Native.EventKind.Search) Search?.Invoke(Native.Utf8(e.Text, e.TextLen));
     }
 }

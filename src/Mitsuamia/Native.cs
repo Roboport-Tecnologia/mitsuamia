@@ -36,7 +36,7 @@ internal static unsafe partial class Native
     public enum BoolProp : uint { Enabled, Checked }
     public enum NumberProp : uint { Number, EstimatedRowHeight }
     public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle }
-    public enum EventKind : uint { Click, Changed, Submit, FocusIn, FocusOut, CloseRequested }
+    public enum EventKind : uint { Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search }
     public enum ValueKind : uint { None, Text, Bool, Number, Index }
 
     [StructLayout(LayoutKind.Sequential)]
