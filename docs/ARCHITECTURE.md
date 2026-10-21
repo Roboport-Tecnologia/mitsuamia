@@ -53,7 +53,8 @@
   showed macOS 15's controls. `buildTransitive/Mitsuamia.targets` marks the
   app host after each build and publish as linked against the installed
   SDK (`vtool`) and signs it again ad hoc. NativeAOT links the executable
-  with the installed SDK, so it needs nothing.
+  with the installed SDK, so it needs nothing. Checked by eye on macOS 26
+  (2026-10-21): the marked SourceGit shows macOS 26's controls.
 
 ## 3. The XAML converter
 
