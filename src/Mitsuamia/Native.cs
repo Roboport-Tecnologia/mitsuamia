@@ -73,6 +73,8 @@ internal static unsafe partial class Native
         public delegate* unmanaged[Cdecl]<nint, uint, void> SelectionChanged;
         public delegate* unmanaged[Cdecl]<nint, uint, byte*, nuint, void> Activated;
         public nint User;
+        public uint Moves;
+        public delegate* unmanaged[Cdecl]<nint, uint, Str*, nuint, uint, byte*, nuint, void> Moved;
     }
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_create_list")]

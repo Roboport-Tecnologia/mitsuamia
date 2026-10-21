@@ -8,6 +8,17 @@ public enum SelectionMode : uint { None, Single, Multiple }
 
 public enum ListStyle : uint { Automatic, Plain, Framed }
 
+/// <summary>Where rows dragged within a list can be dropped: onto a row (into
+/// a group), between rows (to reorder), or both.</summary>
+[Flags]
+public enum RowMoves : uint { None = 0, OntoRows = 1, BetweenRows = 2 }
+
+/// <summary>Where rows dragged within a list were dropped: onto an item,
+/// before one, or at the end (the list's empty part).</summary>
+public readonly record struct RowDrop<T>(RowDropKind Kind, T? Item);
+
+public enum RowDropKind : uint { On, Before, End }
+
 /// <summary>
 /// The platform's own list control. It builds rows only as it shows them,
 /// so its items can be many; rows are told apart by their key.
@@ -20,13 +31,13 @@ public abstract unsafe class ListView : Node
 
     private readonly Dictionary<uint, Node> _rows = [];
 
-    private protected ListView(SelectionMode mode) : base(Create(out var box))
+    private protected ListView(SelectionMode mode, RowMoves moves) : base(Create(moves, out var box))
     {
         box.List = this;
         SelectionMode = mode;
     }
 
-    private static uint Create(out Box box)
+    private static uint Create(RowMoves moves, out Box box)
     {
         box = new Box();
         var callbacks = new Native.ListCallbacks
@@ -37,6 +48,8 @@ public abstract unsafe class ListView : Node
             Activated = &Activated,
             // Lives as long as the app: lists are few.
             User = GCHandle.ToIntPtr(GCHandle.Alloc(box)),
+            Moves = (uint)moves,
+            Moved = &MovedCallback,
         };
         return Native.CheckNode(Native.CreateList(callbacks));
     }
@@ -59,6 +72,7 @@ public abstract unsafe class ListView : Node
     private protected abstract Node? Row(string key);
     private protected abstract void OnSelectionChanged(IReadOnlyList<string> keys);
     private protected abstract void OnActivated(string key);
+    private protected abstract void OnMoved(IReadOnlyList<string> keys, RowDropKind kind, string key);
 
     private protected void SetKeys(IReadOnlyList<string> keys) => Native.Check(Native.ListSetKeys(Id, keys));
     private protected void SetSelectedKeys(IReadOnlyList<string> keys) => Native.Check(Native.ListSetSelected(Id, keys));
@@ -100,6 +114,15 @@ public abstract unsafe class ListView : Node
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static void MovedCallback(nint user, uint list, Native.Str* keys, nuint count, uint to, byte* key, nuint len)
+    {
+        var moved = new string[(int)count];
+        for (var i = 0; i < moved.Length; i++) moved[i] = Native.Utf8(keys[i].Ptr, keys[i].Len);
+        var target = Native.Utf8(key, len);
+        Application.Guard(() => Of(user)?.OnMoved(moved, (RowDropKind)to, target));
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
     private static void Activated(nint user, uint list, byte* key, nuint len)
     {
         var k = Native.Utf8(key, len);
@@ -118,7 +141,11 @@ public sealed class ListView<T> : ListView where T : class
     private readonly Func<T, string> key;
     private readonly Func<T, Node> row;
 
-    public ListView(Func<T, string> key, Func<T, Node> row, SelectionMode mode = SelectionMode.Single) : base(mode)
+    /// <param name="moves">Where rows dragged within the list can go, with
+    /// the platform's own row drag; <see cref="Moved"/> says where they
+    /// went. The list shows nothing moved: the app moves its items.</param>
+    public ListView(Func<T, string> key, Func<T, Node> row, SelectionMode mode = SelectionMode.Single,
+        RowMoves moves = RowMoves.None) : base(mode, moves)
     {
         this.key = key;
         this.row = row;
@@ -167,6 +194,10 @@ public sealed class ListView<T> : ListView where T : class
     /// <summary>The user activated a row: double-click or Return.</summary>
     public event Action<T>? Activated;
 
+    /// <summary>The user dragged rows within the list and dropped them: the
+    /// items, in the list's order, and where.</summary>
+    public event Action<IReadOnlyList<T>, RowDrop<T>>? Moved;
+
     private void ItemsChanged(object? sender, NotifyCollectionChangedEventArgs? e)
     {
         _byKey.Clear();
@@ -185,6 +216,14 @@ public sealed class ListView<T> : ListView where T : class
     {
         _selected = keys.Select(k => _byKey.GetValueOrDefault(k)).OfType<T>().ToArray();
         SelectionChanged?.Invoke(_selected);
+    }
+
+    private protected override void OnMoved(IReadOnlyList<string> keys, RowDropKind kind, string k)
+    {
+        var items = keys.Select(key => _byKey.GetValueOrDefault(key)).OfType<T>().ToArray();
+        var target = kind == RowDropKind.End ? null : _byKey.GetValueOrDefault(k);
+        if (items.Length > 0 && (kind == RowDropKind.End || target != null))
+            Moved?.Invoke(items, new RowDrop<T>(kind, target));
     }
 
     private protected override void OnActivated(string k)
