@@ -106,9 +106,16 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
     window (a side-by-side diff, the conflict editor's three panes), from a
     crate in bemtvi's repository with a C ABI of its own;
   - the server in process, one per app, with a session per surface;
-  - SourceGit's diff model (`Models.TextDiff`: lines, their kinds, old and
-    new numbers) shown as buffers with extmarks, so SourceGit's diff options
-    and staging by line keep working, and the selection reported back;
+  - diffs through the `bemtvi-diff` plugin, a Meld-style renderer you feed
+    a diff to: 2 or 3 read-only panes in lockstep, tints and intra-line
+    spans as extmarks, hunk navigation, and conflict resolution (ours,
+    theirs, both, picked lines), which covers SourceGit's conflict editor.
+    It diffs whole sides itself (LCS); SourceGit's diff comes from git with
+    its options (whitespace, context lines), and staging lines turns
+    selected lines into a patch for git's hunks. So its spec should also
+    take a diff already made (git's hunks), with the selection reported
+    back. It has one session at a time, and side-by-side only: SourceGit
+    also shows a unified diff;
   - a modeless mode for people who don't use vim (bemtvi has none yet), and
     read-only buffers for diffs and blame;
   - accessibility: a `GpuSurface` shows screen readers nothing, so the
