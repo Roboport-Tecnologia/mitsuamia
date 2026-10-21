@@ -29,14 +29,14 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select,
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel }
     public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton }
     public enum NumberProp : uint { Number, EstimatedRowHeight }
     public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle }
-    public enum StringsProp : uint { TabTitles }
+    public enum StringsProp : uint { TabTitles, Options }
     public enum IndexProp : uint { SelectedIndex }
     public enum EventKind : uint
     {
@@ -142,6 +142,35 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, EntryPoint = "mitsuami_create_window")]
     public static partial uint CreateWindow(byte* title, nuint titleLen, float width, float height);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_modal")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetModal(uint window, uint owner, uint modality);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_alert")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool Alert(uint window, Str title, Str message, Str* buttons, nuint count, uint style,
+        delegate* unmanaged[Cdecl]<nint, nuint, void> answer, nint user);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_open_file")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool OpenFile(uint window, Str title, [MarshalAs(UnmanagedType.U1)] bool folders,
+        [MarshalAs(UnmanagedType.U1)] bool multiple, Str startFolder,
+        delegate* unmanaged[Cdecl]<nint, Str*, nuint, void> answer, nint user);
+
+    public static bool Alert(uint window, string title, string message, IReadOnlyList<string> buttons, uint style,
+        delegate* unmanaged[Cdecl]<nint, nuint, void> answer, nint user)
+    {
+        string[] texts = [title, message];
+        return WithStrs(texts, (t, _) => WithStrs(buttons, (b, n) => Alert(window, t[0], t[1], b, n, style, answer, user)));
+    }
+
+    public static bool OpenFile(uint window, string title, bool folders, bool multiple, string startFolder,
+        delegate* unmanaged[Cdecl]<nint, Str*, nuint, void> answer, nint user)
+    {
+        string[] texts = [title, startFolder];
+        return WithStrs(texts, (t, _) => OpenFile(window, t[0], folders, multiple, t[1], answer, user));
+    }
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_insert_child")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool InsertChild(uint parent, uint child, nuint index);
@@ -180,6 +209,10 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_enum")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetEnum(uint node, EnumProp prop, uint value);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_hidden")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetHidden(uint node, [MarshalAs(UnmanagedType.U1)] bool hidden);
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_direction")]
     [return: MarshalAs(UnmanagedType.U1)]

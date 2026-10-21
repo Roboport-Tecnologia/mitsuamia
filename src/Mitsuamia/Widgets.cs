@@ -42,10 +42,21 @@ public class Row : Container
     public Row() => Native.Check(Native.SetDirection(Id, true));
 }
 
+public enum Modality : uint { Window, Application }
+
 public sealed class Window : Node
 {
-    public Window(string title, float width, float height)
-        : base(Native.CheckNode(CreateWindow(title, width, height))) { }
+    /// <summary>A window of this content size; without a height, it
+    /// follows its content's height, as a dialog does.</summary>
+    public Window(string title, float width, float? height = null)
+        : base(Native.CheckNode(CreateWindow(title, width, height ?? -1))) { }
+
+    /// <summary>A modal window on <paramref name="owner"/>: a sheet on
+    /// macOS with <see cref="Modality.Window"/>. Escape or its close button
+    /// close it.</summary>
+    public Window(Window owner, string title, float width, float? height = null, Modality modality = Modality.Window)
+        : this(title, width, height) =>
+        Native.Check(Native.SetModal(Id, owner.Id, (uint)modality));
 
     private static unsafe uint CreateWindow(string title, float width, float height)
     {
@@ -90,7 +101,6 @@ public sealed class Button : Node
     public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
     public ButtonRole Role { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.ButtonRole, (uint)value)); }
     public ButtonStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.ButtonStyle, (uint)value)); }
-    public bool IsEnabled { set => Native.Check(Native.SetBool(Id, Native.BoolProp.Enabled, value)); }
 
     public event Action? Click;
 
@@ -272,4 +282,35 @@ public sealed class DocumentTabs : Node
                 break;
         }
     }
+}
+
+/// <summary>The platform's drop-down. One option is always chosen, as GTK's
+/// can't show none.</summary>
+public sealed class Select : Node
+{
+    public Select(string label = "") : base(Native.Kind.Select) => Label = label;
+
+    /// <summary>Its accessible name.</summary>
+    public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
+
+    public IReadOnlyList<string> Options
+    {
+        set => Native.Check(Native.SetStrings(Id, Native.StringsProp.Options, value));
+    }
+
+    public int SelectedIndex { set => Native.Check(Native.SetIndex(Id, Native.IndexProp.SelectedIndex, value)); }
+
+    /// <summary>The user chose an option: its index.</summary>
+    public event Action<int>? Changed;
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        if (e.Kind == Native.EventKind.Changed && e.ValueKind == Native.ValueKind.Index) Changed?.Invoke((int)e.Index);
+    }
+}
+
+/// <summary>The platform's busy indicator, for work of unknown length.</summary>
+public sealed class Spinner : Node
+{
+    public Spinner() : base(Native.Kind.Spinner) { }
 }

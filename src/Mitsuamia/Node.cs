@@ -107,6 +107,12 @@ public abstract unsafe class Node
         }
     }
 
+    /// <summary>A disabled control can't be used, and shows it.</summary>
+    public bool IsEnabled { set => Native.Check(Native.SetBool(Id, Native.BoolProp.Enabled, value)); }
+
+    /// <summary>Hidden, it takes no room.</summary>
+    public bool IsVisible { set => Native.Check(Native.SetHidden(Id, !value)); }
+
     public float Grow { set => Native.Check(Native.SetGrow(Id, value)); }
     public Align AlignSelf { set => Native.Check(Native.SetAlignSelf(Id, (uint)value)); }
 
