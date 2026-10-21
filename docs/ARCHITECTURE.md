@@ -116,10 +116,17 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
     take a diff already made (git's hunks), with the selection reported
     back. It has one session at a time, and side-by-side only: SourceGit
     also shows a unified diff;
-  - a modeless mode for people who don't use vim (bemtvi has none yet), and
-    read-only buffers for diffs and blame;
-  - accessibility: a `GpuSurface` shows screen readers nothing, so the
-    surface needs to expose its text.
+  - a modeless mode for people who don't use vim, coming to bemtvi as Lua
+    plugins, as the diff work above can be, and read-only buffers for
+    diffs and blame;
+  - accessibility, later: a `GpuSurface` shows screen readers nothing.
+    SourceGit's own code views don't either (AvaloniaEdit has no automation
+    peers), so it isn't a step back.
+- **Accessibility gets better for free.** SourceGit sets no
+  `AutomationProperties` and none of its 25 drawn controls has an
+  automation peer; its 125 or so icon-only buttons likely read as unnamed.
+  On mitsuami, native controls carry their roles, and a button's label is
+  its accessible name even when only its icon shows.
 - **Icons:** SourceGit's own, its 171 vector icons (`Resources/Icons.axaml`,
   path data on a 1024 grid), not the platforms' sets. Every platform shows
   an app's vector icon in its icon colour natively: WinUI's `PathIcon` takes
