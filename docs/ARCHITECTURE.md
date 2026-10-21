@@ -116,9 +116,8 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
     take a diff already made (git's hunks), with the selection reported
     back. It has one session at a time, and side-by-side only: SourceGit
     also shows a unified diff;
-  - a modeless mode for people who don't use vim, coming to bemtvi as Lua
-    plugins, as the diff work above can be, and read-only buffers for
-    diffs and blame;
+  - a modeless mode for people who don't use vim, coming to bemtvi's core,
+    and read-only buffers for diffs and blame;
   - accessibility, later: a `GpuSurface` shows screen readers nothing.
     SourceGit's own code views don't either (AvaloniaEdit has no automation
     peers), so it isn't a step back.
