@@ -29,12 +29,12 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon,
     }
 
-    public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel }
-    public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton }
-    public enum NumberProp : uint { Number, EstimatedRowHeight }
+    public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon }
+    public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly }
+    public enum NumberProp : uint { Number, EstimatedRowHeight, IconSize }
     public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle }
     public enum StringsProp : uint { TabTitles, Options }
     public enum IndexProp : uint { SelectedIndex }
@@ -141,6 +141,29 @@ internal static unsafe partial class Native
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_create_window")]
     public static partial uint CreateWindow(byte* title, nuint titleLen, float width, float height);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_vector_icon")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetVectorIcon(uint node, Str data, float x, float y, float width, float height);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_create_vector_icon")]
+    private static partial uint CreateVectorIcon(Str data, float x, float y, float width, float height);
+
+    public static uint CreateVectorIcon(VectorIcon icon)
+    {
+        uint id = 0;
+        string[] data = [icon.Data];
+        var box = icon.ViewBox ?? default;
+        WithStrs(data, (d, _) => (id = CreateVectorIcon(d[0], box.X, box.Y, box.Width, box.Height)) != 0);
+        return id;
+    }
+
+    public static bool SetVectorIcon(uint node, VectorIcon? icon)
+    {
+        string[] data = [icon?.Data ?? ""];
+        var box = icon?.ViewBox ?? default;
+        return WithStrs(data, (d, _) => SetVectorIcon(node, d[0], box.X, box.Y, box.Width, box.Height));
+    }
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_modal")]
     [return: MarshalAs(UnmanagedType.U1)]

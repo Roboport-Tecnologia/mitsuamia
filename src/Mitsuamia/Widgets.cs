@@ -102,6 +102,16 @@ public sealed class Button : Node
     public ButtonRole Role { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.ButtonRole, (uint)value)); }
     public ButtonStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.ButtonStyle, (uint)value)); }
 
+    /// <summary>The app's own icon before its caption.</summary>
+    public VectorIcon? Icon { set => Native.Check(Native.SetVectorIcon(Id, value)); }
+
+    /// <summary>An icon from the platform's own set, by its name there.</summary>
+    public string IconName { set => Native.Check(Native.SetText(Id, Native.TextProp.Icon, value)); }
+
+    /// <summary>Shows only its icon; the caption stays its accessible
+    /// name, and makes a good tooltip.</summary>
+    public bool IconOnly { set => Native.Check(Native.SetBool(Id, Native.BoolProp.IconOnly, value)); }
+
     public event Action? Click;
 
     public ICommand? Command

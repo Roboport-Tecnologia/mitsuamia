@@ -107,6 +107,10 @@ public abstract unsafe class Node
         }
     }
 
+    /// <summary>What the platform shows by the pointer when it rests on the
+    /// control; empty for none.</summary>
+    public string ToolTip { set => Native.Check(Native.SetText(Id, Native.TextProp.Tooltip, value)); }
+
     /// <summary>A disabled control can't be used, and shows it.</summary>
     public bool IsEnabled { set => Native.Check(Native.SetBool(Id, Native.BoolProp.Enabled, value)); }
 
