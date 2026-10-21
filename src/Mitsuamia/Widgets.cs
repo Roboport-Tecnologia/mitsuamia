@@ -7,6 +7,8 @@ public enum TextStyle : uint { LargeTitle, Title, Headline, Body, Callout, Capti
 
 public enum ButtonRole : uint { Normal, Default, Cancel, Destructive }
 
+public enum ButtonStyle : uint { Automatic, Bordered, Borderless }
+
 /// <summary>A flexbox container, a column by default. Children go in with a
 /// collection initializer: <c>new Column { a, b }</c>.</summary>
 public class Container : Node, IEnumerable<Node>
@@ -87,6 +89,7 @@ public sealed class Button : Node
 
     public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
     public ButtonRole Role { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.ButtonRole, (uint)value)); }
+    public ButtonStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.ButtonStyle, (uint)value)); }
     public bool IsEnabled { set => Native.Check(Native.SetBool(Id, Native.BoolProp.Enabled, value)); }
 
     public event Action? Click;

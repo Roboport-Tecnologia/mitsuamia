@@ -77,7 +77,13 @@ public abstract unsafe class Node
         _children.Clear();
         Live.Remove(Id);
         if (_self.IsAllocated) _self.Free();
+        Forgotten?.Invoke();
+        Forgotten = null;
     }
+
+    /// <summary>The node is gone: destroyed, or a list row the platform
+    /// let go. Bindings stop here.</summary>
+    public event Action? Forgotten;
 
     // Layout, every node's. Lengths are in points; null is auto.
 
