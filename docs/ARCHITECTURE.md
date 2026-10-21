@@ -104,7 +104,11 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
   share trailing items), so both pages keep upstream's 36-point band:
   borderless icon buttons in 32-point slots, each icon padded in its view
   box to upstream's size and nudge (`Icons.Get(key, size, down)`), so they
-  line up as upstream's do.
+  line up as upstream's do. The band is the window's header
+  (`Container.IsHeader`): on macOS it's in the title bar's glass under the
+  tabs, spanning the window, with no line between them, as Safari's bars
+  are; elsewhere it's the content's top. Checked by eye on macOS 26
+  (2026-10-21).
 - **Captures for checking the look:** `SOURCEGIT_CAPTURE=<file.png>`
   (with `SOURCEGIT_CAPTURE_TAB=new` for a welcome page) writes the main
   window's content to a PNG once it settles, through mitsuami's offscreen

@@ -9,6 +9,8 @@ public enum ButtonRole : uint { Normal, Default, Cancel, Destructive }
 
 public enum ButtonStyle : uint { Automatic, Bordered, Borderless }
 
+public enum HeaderEdge : uint { Automatic, Soft, Hard }
+
 /// <summary>A flexbox container, a column by default. Children go in with a
 /// collection initializer: <c>new Column { a, b }</c>.</summary>
 public class Container : Node, IEnumerable<Node>
@@ -27,6 +29,15 @@ public class Container : Node, IEnumerable<Node>
 
     public Align AlignItems { set => Native.Check(Native.SetAlignItems(Id, (uint)value)); }
     public Justify Justify { set => Native.Check(Native.SetJustify(Id, (uint)value)); }
+
+    /// <summary>Its window's header: on macOS a strip in the title bar,
+    /// under the title and spanning the window, as Safari's tab bar; on the
+    /// others the content's top, as it is.</summary>
+    public bool IsHeader { set => Native.Check(Native.SetBool(Id, Native.BoolProp.Header, value)); }
+
+    /// <summary>How a header meets what scrolls under it, on macOS 26.1 and
+    /// later.</summary>
+    public HeaderEdge HeaderEdge { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.HeaderEdge, (uint)value)); }
 
     public IEnumerator<Node> GetEnumerator() => Children.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
