@@ -27,7 +27,7 @@ public class Container : Node, IEnumerable<Node>
     public void Add(Node child) => base.Add(child);
     public void Insert(int index, Node child) => base.Add(child, index);
 
-    public float Gap { set => Native.Check(Native.SetGap(Id, value)); }
+    public Length Gap { set => Native.Check(Native.SetGap(Id, value)); }
 
     public Thickness Padding
     {

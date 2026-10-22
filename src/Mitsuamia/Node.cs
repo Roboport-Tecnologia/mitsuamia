@@ -142,63 +142,63 @@ public abstract unsafe class Node
     /// let go. Bindings stop here.</summary>
     public event Action? Forgotten;
 
-    // Layout, every node's. Lengths are in points; null is auto.
+    // Layout, every node's. Null is auto.
 
-    private float? _width, _height, _minWidth, _minHeight, _maxWidth, _maxHeight;
+    private Length? _width, _height, _minWidth, _minHeight, _maxWidth, _maxHeight;
 
     /// <summary>The least the layout gives it; null: none.</summary>
-    public float? MinWidth
+    public Length? MinWidth
     {
         set
         {
             _minWidth = value;
-            Native.Check(Native.SetMinSize(Id, _minWidth ?? -1, _minHeight ?? -1));
+            Native.Check(Native.SetMinSize(Id, _minWidth ?? Length.Auto, _minHeight ?? Length.Auto));
         }
     }
 
-    public float? MinHeight
+    public Length? MinHeight
     {
         set
         {
             _minHeight = value;
-            Native.Check(Native.SetMinSize(Id, _minWidth ?? -1, _minHeight ?? -1));
+            Native.Check(Native.SetMinSize(Id, _minWidth ?? Length.Auto, _minHeight ?? Length.Auto));
         }
     }
 
     /// <summary>The most the layout gives it; null: none.</summary>
-    public float? MaxWidth
+    public Length? MaxWidth
     {
         set
         {
             _maxWidth = value;
-            Native.Check(Native.SetMaxSize(Id, _maxWidth ?? -1, _maxHeight ?? -1));
+            Native.Check(Native.SetMaxSize(Id, _maxWidth ?? Length.Auto, _maxHeight ?? Length.Auto));
         }
     }
 
-    public float? MaxHeight
+    public Length? MaxHeight
     {
         set
         {
             _maxHeight = value;
-            Native.Check(Native.SetMaxSize(Id, _maxWidth ?? -1, _maxHeight ?? -1));
+            Native.Check(Native.SetMaxSize(Id, _maxWidth ?? Length.Auto, _maxHeight ?? Length.Auto));
         }
     }
 
-    public float? Width
+    public Length? Width
     {
         set
         {
             _width = value;
-            Native.Check(Native.SetSize(Id, _width ?? -1, _height ?? -1));
+            Native.Check(Native.SetSize(Id, _width ?? Length.Auto, _height ?? Length.Auto));
         }
     }
 
-    public float? Height
+    public Length? Height
     {
         set
         {
             _height = value;
-            Native.Check(Native.SetSize(Id, _width ?? -1, _height ?? -1));
+            Native.Check(Native.SetSize(Id, _width ?? Length.Auto, _height ?? Length.Auto));
         }
     }
 
@@ -222,9 +222,10 @@ public abstract unsafe class Node
 }
 
 /// <summary>Edges, with start and end following the text's direction.</summary>
-public readonly record struct Thickness(float Top, float End, float Bottom, float Start)
+public readonly record struct Thickness(Length Top, Length End, Length Bottom, Length Start)
 {
-    public Thickness(float all) : this(all, all, all, all) { }
-    public Thickness(float vertical, float horizontal) : this(vertical, horizontal, vertical, horizontal) { }
+    public Thickness(Length all) : this(all, all, all, all) { }
+    public Thickness(Length vertical, Length horizontal) : this(vertical, horizontal, vertical, horizontal) { }
     public static implicit operator Thickness(float all) => new(all);
+    public static implicit operator Thickness(Spacing all) => new(all);
 }

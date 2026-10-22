@@ -304,11 +304,11 @@ internal static unsafe partial class Native
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_min_size")]
     [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool SetMinSize(uint node, float width, float height);
+    public static partial bool SetMinSize(uint node, Length width, Length height);
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_max_size")]
     [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool SetMaxSize(uint node, float width, float height);
+    public static partial bool SetMaxSize(uint node, Length width, Length height);
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_hidden")]
     [return: MarshalAs(UnmanagedType.U1)]
@@ -320,19 +320,19 @@ internal static unsafe partial class Native
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_gap")]
     [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool SetGap(uint node, float gap);
+    public static partial bool SetGap(uint node, Length gap);
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_padding")]
     [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool SetPadding(uint node, float top, float end, float bottom, float start);
+    public static partial bool SetPadding(uint node, Length top, Length end, Length bottom, Length start);
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_margin")]
     [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool SetMargin(uint node, float top, float end, float bottom, float start);
+    public static partial bool SetMargin(uint node, Length top, Length end, Length bottom, Length start);
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_size")]
     [return: MarshalAs(UnmanagedType.U1)]
-    public static partial bool SetSize(uint node, float width, float height);
+    public static partial bool SetSize(uint node, Length width, Length height);
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_grow")]
     [return: MarshalAs(UnmanagedType.U1)]
