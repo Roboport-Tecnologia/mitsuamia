@@ -187,6 +187,17 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
      its rows (`itemAnimations: false`), as upstream's just show.
 3. **The repository view:** history (`Table` and the drawn graph), local
    changes, committing, branches, the split.
+   - The history (2026-10-22): a `TableView` (the C ABI's `Table`) of the
+     commits, upstream's columns as the repository shows them, rows 26
+     points high. The graph isn't drawn over the list as upstream's is:
+     each row's first cell is a `DrawnWidget` with the row's part of it
+     (upstream's lines and curves, split where they cross the row's edges,
+     and its dots), as native Git clients' tables draw theirs. AppKit's
+     tables put no space between rows, so the lines join; checked by eye
+     on a repository with merges. GTK's and WinUI's cells are padded, so
+     there the graph will need cells that fill their rows: a mitsuami
+     addition, not tried yet. A refresh keeps the rows of commits still
+     there (they're keyed by SHA), and their cells show the new commits.
 4. **Diffs, blame and conflicts:** the code view, the largest single piece.
 5. **The remaining popups and windows,** the converter making the first pass.
 
