@@ -188,6 +188,10 @@ public sealed class Text : Node
 
     /// <summary>Its weight, over its style's.</summary>
     public FontWeight Weight { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.FontWeight, (uint)value)); }
+
+    /// <summary>Shows at most this many lines, the last cut off with the
+    /// platform's ellipsis; 0 shows them all.</summary>
+    public int MaxLines { set => Native.Check(Native.SetNumber(Id, Native.NumberProp.MaxLines, value)); }
 }
 
 public enum FontWeight : uint { Regular, Medium, Semibold, Bold }

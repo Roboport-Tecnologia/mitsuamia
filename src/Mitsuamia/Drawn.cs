@@ -133,4 +133,20 @@ public readonly ref struct Canvas
     /// <see cref="Icon"/> of that size is. The non-zero rule fills it.</summary>
     public void FillIcon(VectorIcon icon, float x, float y, float side, Color color) =>
         Native.Check(Native.CanvasPath(_canvas, icon, x, y, side, 0, color.ToNative()));
+
+    /// <summary>Strokes a path, given as SVG path data in the widget's own
+    /// points, with lines <paramref name="lineWidth"/> points wide.</summary>
+    public void StrokePath(string data, Color color, float lineWidth = 1) =>
+        Native.Check(Native.CanvasPath(_canvas, InPoints(data), 0, 0, Side, lineWidth, color.ToNative()));
+
+    /// <summary>Fills a path, as SVG path data in the widget's own points,
+    /// by the non-zero rule.</summary>
+    public void FillPath(string data, Color color) =>
+        Native.Check(Native.CanvasPath(_canvas, InPoints(data), 0, 0, Side, 0, color.ToNative()));
+
+    // A square view box as large as the square it's fitted in draws the
+    // path's units as points.
+    private float Side => Math.Max(1, Math.Max(Width, Height));
+
+    private VectorIcon InPoints(string data) => new(data, new ViewBox(0, 0, Side, Side));
 }
