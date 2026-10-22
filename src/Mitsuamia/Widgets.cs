@@ -156,7 +156,12 @@ public sealed class Text : Node
     public TextStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.TextStyle, (uint)value)); }
 
     public Color Color { set => Native.Check(value.Set(Id)); }
+
+    /// <summary>Its weight, over its style's.</summary>
+    public FontWeight Weight { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.FontWeight, (uint)value)); }
 }
+
+public enum FontWeight : uint { Regular, Medium, Semibold, Bold }
 
 /// <summary>Takes an <see cref="ICommand"/>, as Avalonia's and WPF's
 /// buttons do: clicking executes it, and it's enabled while it can.</summary>

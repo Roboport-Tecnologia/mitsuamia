@@ -76,7 +76,18 @@ public abstract unsafe class ListView : Node
     private protected abstract void OnActivated(string key);
     private protected abstract void OnMoved(IReadOnlyList<string> keys, RowDropKind kind, string key);
 
-    private protected void SetKeys(IReadOnlyList<string> keys) => Native.Check(Native.ListSetKeys(Id, keys));
+    private protected void SetKeys(IReadOnlyList<string> keys)
+    {
+        Native.Check(Native.ListSetKeys(Id, keys));
+        ItemCount = keys.Count;
+        ItemsChanged?.Invoke();
+    }
+
+    /// <summary>How many items it has.</summary>
+    public int ItemCount { get; private set; }
+
+    /// <summary>Its items changed: for a list as tall as its rows.</summary>
+    public event Action? ItemsChanged;
     private protected void SetSelectedKeys(IReadOnlyList<string> keys) => Native.Check(Native.ListSetSelected(Id, keys));
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
