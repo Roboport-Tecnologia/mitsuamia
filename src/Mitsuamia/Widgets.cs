@@ -240,6 +240,19 @@ public sealed class Button : Node
 
 public enum Orientation : uint { Horizontal, Vertical }
 
+/// <summary>The platform's line between groups of content, across its
+/// container (horizontal) or, vertical, between items in a row.</summary>
+public sealed class Separator : Node
+{
+    public Separator(Orientation orientation = Orientation.Horizontal) : base(Native.Kind.Separator) =>
+        Orientation = orientation;
+
+    public Orientation Orientation
+    {
+        set => Native.Check(Native.SetEnum(Id, Native.EnumProp.Orientation, (uint)value));
+    }
+}
+
 /// <summary>
 /// Two panes with a divider between them that the user drags, as the
 /// platform splits a window: side by side, or one over the other when
