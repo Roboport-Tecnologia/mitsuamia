@@ -37,4 +37,6 @@ public readonly record struct Color
     public static Color Rgba(byte r, byte g, byte b, byte a = 255) => new(9, r, g, b, a);
 
     internal bool Set(uint node) => Native.SetColor(node, 0, _semantic, R, G, B, A);
+
+    internal Native.Color ToNative() => new() { Semantic = _semantic, R = R, G = G, B = B, A = A };
 }

@@ -42,6 +42,14 @@
   GC collects them, so handles carry a generation and a stale one fails
   cleanly. Panics are caught at the boundary, and so are exceptions in
   callbacks.
+- **Custom widgets drawn in C#:** `DrawnWidget` is mitsuami's drawn tier
+  (its §7.3) with the drawing in C#: the core lays it out and keeps its
+  semantics (a role, a value, the accessibility actions it takes), calls
+  back to draw it in the platform's colours (rectangles, ellipses, icon
+  paths) after layout, and hands it the primary button's presses and
+  assistive technology's actions. Its state is the app's, so it says when
+  to draw again. For looks no platform has, as SourceGit's bookmark
+  picker; a control a platform has stays native.
 - **Escape hatches:** a raw native handle is wrapped with each platform's
   .NET bindings (C#/WinRT for WinUI, the .NET macOS bindings, Gir.Core for
   GTK).

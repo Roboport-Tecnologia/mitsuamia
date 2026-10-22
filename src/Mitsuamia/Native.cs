@@ -41,7 +41,7 @@ internal static unsafe partial class Native
     public enum EventKind : uint
     {
         Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search, TabCloseRequested, TabMoved, NewTabRequested,
-        ContextMenuItem, DropHover, FilesDropped,
+        ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction,
     }
     public enum ValueKind : uint { None, Text, Bool, Number, Index }
 
@@ -56,6 +56,8 @@ internal static unsafe partial class Native
         public double Number;
         public ulong Index;
         public ulong To;
+        public float X;
+        public float Y;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -126,6 +128,71 @@ internal static unsafe partial class Native
         {
             foreach (var h in handles) if (h.IsAllocated) h.Free();
         }
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Color
+    {
+        public uint Semantic;
+        public byte R, G, B, A;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct DrawnCallbacks
+    {
+        public delegate* unmanaged[Cdecl]<nint, uint, nint, float, float, void> Draw;
+        public nint User;
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_create_drawn")]
+    private static partial uint CreateDrawn(Str name, DrawnCallbacks callbacks, float width, float height);
+
+    public static uint CreateDrawn(string name, DrawnCallbacks callbacks, float width, float height)
+    {
+        uint id = 0;
+        string[] texts = [name];
+        WithStrs(texts, (n, _) => (id = CreateDrawn(n[0], callbacks, width, height)) != 0);
+        return id;
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_drawn_set_semantics")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool DrawnSetSemantics(uint node, uint role, Str value, uint actions);
+
+    public static bool DrawnSetSemantics(uint node, uint role, string value, uint actions)
+    {
+        string[] texts = [value];
+        return WithStrs(texts, (v, _) => DrawnSetSemantics(node, role, v[0], actions));
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_drawn_set_size")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool DrawnSetSize(uint node, float width, float height);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_drawn_redraw")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool DrawnRedraw(uint node);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_canvas_rect")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool CanvasRect(nint canvas, float x, float y, float width, float height, float radius,
+        float stroke, Color color);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_canvas_ellipse")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool CanvasEllipse(nint canvas, float x, float y, float width, float height, float stroke,
+        Color color);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_canvas_path")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool CanvasPath(nint canvas, Str data, float viewX, float viewY, float viewWidth,
+        float viewHeight, float x, float y, float side, float stroke, Color color);
+
+    public static bool CanvasPath(nint canvas, VectorIcon icon, float x, float y, float side, float stroke, Color color)
+    {
+        string[] data = [icon.Data];
+        var box = icon.ViewBox ?? default;
+        return WithStrs(data, (d, _) => CanvasPath(canvas, d[0], box.X, box.Y, box.Width, box.Height, x, y, side, stroke, color));
     }
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_last_error")]
