@@ -27,26 +27,36 @@ public abstract unsafe class ListView : Node
 {
     // mitsuami knows the list before the node object exists, so the
     // callbacks find it through a box filled in once it does.
-    private sealed class Box { public ListView? List; }
+    private protected sealed class Box { public ListView? List; }
 
     private readonly Dictionary<uint, Node> _rows = [];
 
     private protected ListView(SelectionMode mode, RowMoves moves, bool itemAnimations)
-        : base(Create(moves, itemAnimations, out var box))
+        : this(box => CreateList(box, moves, itemAnimations), mode)
+    {
+    }
+
+    /// <summary>A list made by <paramref name="create"/>: a table.</summary>
+    private protected ListView(Func<Box, uint> create, SelectionMode mode) : base(Create(create, out var box))
     {
         box.List = this;
         SelectionMode = mode;
     }
 
-    private static uint Create(RowMoves moves, bool itemAnimations, out Box box)
+    private static uint Create(Func<Box, uint> create, out Box box)
     {
         box = new Box();
+        return create(box);
+    }
+
+    private static uint CreateList(Box box, RowMoves moves, bool itemAnimations)
+    {
         var callbacks = new Native.ListCallbacks
         {
             BuildRow = &BuildRow,
             ReleaseRow = &ReleaseRow,
             SelectionChanged = &SelectionChangedCallback,
-            Activated = &Activated,
+            Activated = &ActivatedCallback,
             // Lives as long as the app: lists are few.
             User = GCHandle.ToIntPtr(GCHandle.Alloc(box)),
             Moves = (uint)moves,
@@ -56,7 +66,7 @@ public abstract unsafe class ListView : Node
         return Native.CheckNode(Native.CreateList(callbacks));
     }
 
-    private static ListView? Of(nint user) => ((Box)GCHandle.FromIntPtr(user).Target!).List;
+    private protected static ListView? Of(nint user) => ((Box)GCHandle.FromIntPtr(user).Target!).List;
 
     public SelectionMode SelectionMode
     {
@@ -72,6 +82,8 @@ public abstract unsafe class ListView : Node
     }
 
     private protected abstract Node? Row(string key);
+    private protected virtual Node? Cell(string key, int column) => null;
+    private protected virtual void OnSorted(int column, bool descending) { }
     private protected abstract void OnSelectionChanged(IReadOnlyList<string> keys);
     private protected abstract void OnActivated(string key);
     private protected abstract void OnMoved(IReadOnlyList<string> keys, RowDropKind kind, string key);
@@ -104,7 +116,20 @@ public abstract unsafe class ListView : Node
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static void ReleaseRow(nint user, uint list, uint row)
+    private protected static uint BuildCell(nint user, uint table, byte* key, nuint len, nuint column)
+    {
+        uint id = 0;
+        Application.Guard(() =>
+        {
+            if (Of(user) is not { } view || view.Cell(Native.Utf8(key, len), (int)column) is not { } cell) return;
+            view._rows[cell.Id] = cell;
+            id = cell.Id;
+        });
+        return id;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private protected static void ReleaseRow(nint user, uint list, uint row)
     {
         Application.Guard(() =>
         {
@@ -114,7 +139,7 @@ public abstract unsafe class ListView : Node
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static void SelectionChangedCallback(nint user, uint list)
+    private protected static void SelectionChangedCallback(nint user, uint list)
     {
         Application.Guard(() =>
         {
@@ -136,7 +161,13 @@ public abstract unsafe class ListView : Node
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static void Activated(nint user, uint list, byte* key, nuint len)
+    private protected static void SortedCallback(nint user, uint table, nuint column, byte descending)
+    {
+        Application.Guard(() => Of(user)?.OnSorted((int)column, descending != 0));
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private protected static void ActivatedCallback(nint user, uint list, byte* key, nuint len)
     {
         var k = Native.Utf8(key, len);
         Application.Guard(() => Of(user)?.OnActivated(k));
@@ -149,7 +180,7 @@ public abstract unsafe class ListView : Node
 /// Avalonia's <c>AvaloniaList</c>). <paramref name="row"/> builds an item's
 /// row when the platform shows it, as a <c>DataTemplate</c> does.
 /// </summary>
-public sealed class ListView<T> : ListView where T : class
+public class ListView<T> : ListView where T : class
 {
     private readonly Func<T, string> key;
     private readonly Func<T, Node> row;
@@ -166,12 +197,28 @@ public sealed class ListView<T> : ListView where T : class
     {
         this.key = key;
         this.row = row;
+        FollowItems();
+    }
+
+    /// <summary>A list made by <paramref name="create"/>: a table, whose
+    /// rows are cells.</summary>
+    private protected ListView(Func<T, string> key, Func<Box, uint> create, SelectionMode mode) : base(create, mode)
+    {
+        this.key = key;
+        row = _ => null!;
+        FollowItems();
+    }
+
+    private void FollowItems()
+    {
         // The items usually outlive the list: stop following them with it.
         Forgotten += () =>
         {
-            if (_items is INotifyCollectionChanged items) items.CollectionChanged -= ItemsChanged;
+            if (_items is INotifyCollectionChanged items) items.CollectionChanged -= OnItemsChanged;
         };
     }
+
+    private protected T? ItemOf(string k) => _byKey.GetValueOrDefault(k);
 
     private readonly Dictionary<string, T> _byKey = [];
     private IReadOnlyList<T> _items = [];
@@ -182,10 +229,10 @@ public sealed class ListView<T> : ListView where T : class
         get => _items;
         set
         {
-            if (_items is INotifyCollectionChanged old) old.CollectionChanged -= ItemsChanged;
+            if (_items is INotifyCollectionChanged old) old.CollectionChanged -= OnItemsChanged;
             _items = value;
-            if (value is INotifyCollectionChanged now) now.CollectionChanged += ItemsChanged;
-            ItemsChanged(null, null);
+            if (value is INotifyCollectionChanged now) now.CollectionChanged += OnItemsChanged;
+            OnItemsChanged(null, null);
         }
     }
 
@@ -215,7 +262,7 @@ public sealed class ListView<T> : ListView where T : class
     /// items, in the list's order, and where.</summary>
     public event Action<IReadOnlyList<T>, RowDrop<T>>? Moved;
 
-    private void ItemsChanged(object? sender, NotifyCollectionChangedEventArgs? e)
+    private void OnItemsChanged(object? sender, NotifyCollectionChangedEventArgs? e)
     {
         _byKey.Clear();
         var keys = new string[_items.Count];

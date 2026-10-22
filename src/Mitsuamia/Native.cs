@@ -83,6 +83,50 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, EntryPoint = "mitsuami_create_list")]
     public static partial uint CreateList(ListCallbacks callbacks);
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TableColumn
+    {
+        public Str Title;
+        public float Width;
+        [MarshalAs(UnmanagedType.U1)] public bool Expand;
+        [MarshalAs(UnmanagedType.U1)] public bool Sortable;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TableCallbacks
+    {
+        public delegate* unmanaged[Cdecl]<nint, uint, byte*, nuint, nuint, uint> BuildCell;
+        public delegate* unmanaged[Cdecl]<nint, uint, uint, void> ReleaseCell;
+        public delegate* unmanaged[Cdecl]<nint, uint, void> SelectionChanged;
+        public delegate* unmanaged[Cdecl]<nint, uint, byte*, nuint, void> Activated;
+        public delegate* unmanaged[Cdecl]<nint, uint, nuint, byte, void> Sorted;
+        public nint User;
+        public uint Still;
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_create_table")]
+    private static partial uint CreateTable(TableCallbacks callbacks, TableColumn* columns, nuint count);
+
+    /// <summary>Columns are titles, widths (0: the platform's), whether
+    /// each expands and sorts.</summary>
+    public static uint CreateTable(TableCallbacks callbacks, IReadOnlyList<(string Title, float Width, bool Expand, bool Sortable)> columns)
+    {
+        uint id = 0;
+        WithStrs(columns.Select(c => c.Title).ToArray(), (titles, n) =>
+        {
+            var native = new TableColumn[(int)n];
+            for (var i = 0; i < native.Length; i++)
+                native[i] = new TableColumn { Title = titles[i], Width = columns[i].Width, Expand = columns[i].Expand, Sortable = columns[i].Sortable };
+            fixed (TableColumn* p = native) id = CreateTable(callbacks, p, n);
+            return id != 0;
+        });
+        return id;
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_table_set_sort")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool TableSetSort(uint table, nuint column, [MarshalAs(UnmanagedType.U1)] bool descending);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_list_set_keys")]
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool ListSetKeys(uint list, Str* keys, nuint count);
