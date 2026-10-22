@@ -48,8 +48,9 @@
   back to draw it in the platform's colours (rectangles, ellipses, icon
   paths) after layout, and hands it the primary button's presses and
   assistive technology's actions. Its state is the app's, so it says when
-  to draw again. For looks no platform has, as SourceGit's bookmark
-  picker; a control a platform has stays native.
+  to draw again. For what no platform's controls can show, as SourceGit's
+  commit graph; anything the platform's controls can make (a row of toggle
+  buttons, as SourceGit's bookmark picker is) is made of them.
 - **Escape hatches:** a raw native handle is wrapped with each platform's
   .NET bindings (C#/WinRT for WinUI, the .NET macOS bindings, Gir.Core for
   GTK).

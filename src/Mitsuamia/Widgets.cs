@@ -180,6 +180,10 @@ public sealed class Button : Node
     /// name, and makes a good tooltip.</summary>
     public bool IconOnly { set => Native.Check(Native.SetBool(Id, Native.BoolProp.IconOnly, value)); }
 
+    /// <summary>Its icon's colour, in place of the platform's; the caption
+    /// keeps the platform's.</summary>
+    public Color IconColor { set => Native.Check(value.Set(Id)); }
+
     public event Action? Click;
 
     public ICommand? Command
@@ -203,6 +207,48 @@ public sealed class Button : Node
         if (e.Kind != Native.EventKind.Click) return;
         Click?.Invoke();
         if (_command?.CanExecute(CommandParameter) == true) _command.Execute(CommandParameter);
+    }
+}
+
+/// <summary>A button that stays pressed until it's pressed again, as the
+/// platform makes one.</summary>
+public sealed class ToggleButton : Node
+{
+    public ToggleButton(string label = "") : base(Native.Kind.ToggleButton) => Label = label;
+
+    public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
+    public ButtonStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.ButtonStyle, (uint)value)); }
+
+    /// <summary>The app's own icon before its caption.</summary>
+    public VectorIcon? Icon { set => Native.Check(Native.SetVectorIcon(Id, value)); }
+
+    /// <summary>Shows only its icon; the caption stays its accessible
+    /// name.</summary>
+    public bool IconOnly { set => Native.Check(Native.SetBool(Id, Native.BoolProp.IconOnly, value)); }
+
+    /// <summary>Its icon's colour, as for <see cref="Button.IconColor"/>.</summary>
+    public Color IconColor { set => Native.Check(value.Set(Id)); }
+
+    private bool _checked;
+
+    public bool IsChecked
+    {
+        get => _checked;
+        set
+        {
+            _checked = value;
+            Native.Check(Native.SetBool(Id, Native.BoolProp.Checked, value));
+        }
+    }
+
+    /// <summary>The user pressed it, or let it go.</summary>
+    public event Action<bool>? Changed;
+
+    private protected override unsafe void OnEvent(Native.Event e)
+    {
+        if (e.Kind != Native.EventKind.Changed || e.ValueKind != Native.ValueKind.Bool) return;
+        _checked = e.Flag;
+        Changed?.Invoke(e.Flag);
     }
 }
 
