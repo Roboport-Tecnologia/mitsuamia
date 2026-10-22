@@ -42,6 +42,12 @@ public class Container : Node, IEnumerable<Node>
     /// others the content's top, as it is.</summary>
     public bool IsHeader { set => Native.Check(Native.SetBool(Id, Native.BoolProp.Header, value)); }
 
+    /// <summary>A pane down its window's side that navigates, built by the
+    /// app (the rail that picks a Git client's pages): on Windows, under tabs in the title
+    /// bar, on the same layer as the chosen tab and the header; elsewhere
+    /// as it is.</summary>
+    public bool IsSidebarPane { set => Native.Check(Native.SetBool(Id, Native.BoolProp.SidebarPane, value)); }
+
     /// <summary>How a header meets what scrolls under it, on macOS 26.1 and
     /// later.</summary>
     public HeaderEdge HeaderEdge { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.HeaderEdge, (uint)value)); }
