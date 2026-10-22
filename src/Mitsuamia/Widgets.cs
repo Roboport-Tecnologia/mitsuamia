@@ -210,6 +210,54 @@ public sealed class Button : Node
     }
 }
 
+public enum Orientation : uint { Horizontal, Vertical }
+
+/// <summary>
+/// Two panes with a divider between them that the user drags, as the
+/// platform splits a window: side by side, or one over the other when
+/// <see cref="Orientation"/> is vertical. Its two children are the panes.
+/// The first is <see cref="Position"/> long along the split (its content's,
+/// until there's one) and keeps it as the split grows; the second takes the
+/// rest. A pane's least width (or height) is as far as the divider goes.
+/// </summary>
+public sealed class Split : Node, IEnumerable<Node>
+{
+    public Split() : base(Native.Kind.Split) { }
+
+    public void Add(Node child) => base.Add(child);
+
+    public Orientation Orientation
+    {
+        set => Native.Check(Native.SetEnum(Id, Native.EnumProp.Orientation, (uint)value));
+    }
+
+    private double? _position;
+
+    /// <summary>The first pane's length along the split, in points.</summary>
+    public double? Position
+    {
+        get => _position;
+        set
+        {
+            _position = value;
+            if (value is { } position) Native.Check(Native.SetNumber(Id, Native.NumberProp.Number, position));
+        }
+    }
+
+    /// <summary>The user moved the divider: the first pane's new length.</summary>
+    public event Action<double>? Changed;
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        if (e.Kind != Native.EventKind.Changed || e.ValueKind != Native.ValueKind.Number) return;
+        _position = e.Number;
+        Changed?.Invoke(e.Number);
+    }
+
+    public IEnumerator<Node> GetEnumerator() => Children.GetEnumerator();
+    IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
 /// <summary>A button that stays pressed until it's pressed again, as the
 /// platform makes one.</summary>
 public sealed class ToggleButton : Node

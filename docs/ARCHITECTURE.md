@@ -125,11 +125,12 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
 
 ### What it needs
 
-- **In mitsuami** (if every platform has it natively): a tree (branches,
+- **In mitsuami** (if every platform has it natively): splits (`Split`:
+  native on three platforms, and on WinUI built as File Explorer's pane
+  edge, so they went into mitsuami, not extras); a tree (branches,
   the welcome page's groups, changed files), text with inline runs (116
   `Run`s), popovers (`Popup`, `MenuFlyout`).
-- **In mitsuami-extras:** a resizable split (WinUI 3 has no native
-  splitter); the commit graph and charts, drawn; the avatar.
+- **In mitsuami-extras:** the commit graph and charts, drawn; the avatar.
 - **The code view is an embedded bemtvi** (`../nxvim`), for diffs, blame,
   the merge conflict editor and the commit message, on every platform.
   `bemtvi-gui` already runs on mitsuami (a `GpuSurface` painted with wgpu);

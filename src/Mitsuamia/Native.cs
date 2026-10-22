@@ -29,13 +29,13 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split,
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId }
     public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly, Header }
     public enum NumberProp : uint { Number, EstimatedRowHeight, IconSize }
-    public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle, HeaderEdge }
+    public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle, HeaderEdge, Orientation }
     public enum StringsProp : uint { TabTitles, Options }
     public enum IndexProp : uint { SelectedIndex }
     public enum EventKind : uint
