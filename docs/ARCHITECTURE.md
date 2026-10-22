@@ -176,6 +176,13 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
      only type-check, on mitsuami's side.
 2. **The launcher:** welcome page, repository tabs, opening a repository,
    clone, preferences. Brings the tree, the first popups and the app's icons.
+   - Found on Windows (2026-10-22): `Application.Run` starts WinUI on a
+     thread of its own when `Main`'s is multithreaded (.NET's default),
+     since WinUI needs a single-threaded one. The preferences stay
+     read-only for now (no `Preferences.SetCanModify()`, which upstream's
+     startup calls): the port doesn't risk corrupting a user's file, so
+     its changes last until it quits. The welcome list doesn't animate
+     its rows (`itemAnimations: false`), as upstream's just show.
 3. **The repository view:** history (`Table` and the drawn graph), local
    changes, committing, branches, the split.
 4. **Diffs, blame and conflicts:** the code view, the largest single piece.

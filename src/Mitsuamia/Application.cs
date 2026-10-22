@@ -26,6 +26,24 @@ public static unsafe class Application
 
     public static void Run(string id, string name, Action setup)
     {
+        // WinUI needs a single-threaded apartment, and .NET starts Main in
+        // a multithreaded one unless it's marked [STAThread], which
+        // top-level statements can't be. Windows doesn't need the main
+        // thread, so the run loop gets a thread of its own.
+        if (OperatingSystem.IsWindows() && Thread.CurrentThread.GetApartmentState() != ApartmentState.STA)
+        {
+            Exception? error = null;
+            var thread = new Thread(() =>
+            {
+                try { Run(id, name, setup); }
+                catch (Exception e) { error = e; }
+            });
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
+            if (error is not null) throw error;
+            return;
+        }
         _setup = setup;
         var idBytes = Encoding.UTF8.GetBytes(id);
         var nameBytes = Encoding.UTF8.GetBytes(name);

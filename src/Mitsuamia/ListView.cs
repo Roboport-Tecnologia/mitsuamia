@@ -31,13 +31,14 @@ public abstract unsafe class ListView : Node
 
     private readonly Dictionary<uint, Node> _rows = [];
 
-    private protected ListView(SelectionMode mode, RowMoves moves) : base(Create(moves, out var box))
+    private protected ListView(SelectionMode mode, RowMoves moves, bool itemAnimations)
+        : base(Create(moves, itemAnimations, out var box))
     {
         box.List = this;
         SelectionMode = mode;
     }
 
-    private static uint Create(RowMoves moves, out Box box)
+    private static uint Create(RowMoves moves, bool itemAnimations, out Box box)
     {
         box = new Box();
         var callbacks = new Native.ListCallbacks
@@ -50,6 +51,7 @@ public abstract unsafe class ListView : Node
             User = GCHandle.ToIntPtr(GCHandle.Alloc(box)),
             Moves = (uint)moves,
             Moved = &MovedCallback,
+            Still = itemAnimations ? 0u : 1u,
         };
         return Native.CheckNode(Native.CreateList(callbacks));
     }
@@ -144,8 +146,12 @@ public sealed class ListView<T> : ListView where T : class
     /// <param name="moves">Where rows dragged within the list can go, with
     /// the platform's own row drag; <see cref="Moved"/> says where they
     /// went. The list shows nothing moved: the app moves its items.</param>
+    /// <param name="itemAnimations">False: rows don't animate in where the
+    /// platform animates them (WinUI's list view slides and fades them in,
+    /// again when they all change), for lists whose rows move or change
+    /// wholesale.</param>
     public ListView(Func<T, string> key, Func<T, Node> row, SelectionMode mode = SelectionMode.Single,
-        RowMoves moves = RowMoves.None) : base(mode, moves)
+        RowMoves moves = RowMoves.None, bool itemAnimations = true) : base(mode, moves, itemAnimations)
     {
         this.key = key;
         this.row = row;
