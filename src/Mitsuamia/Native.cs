@@ -33,7 +33,7 @@ internal static unsafe partial class Native
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId }
-    public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly, Header }
+    public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly, Header, Clickable }
     public enum NumberProp : uint { Number, EstimatedRowHeight, IconSize }
     public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle, HeaderEdge, Orientation, FontWeight }
     public enum StringsProp : uint { TabTitles, Options }

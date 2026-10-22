@@ -61,10 +61,33 @@ public class Container : Node, IEnumerable<Node>
     /// <summary>The paths dropped on it that it takes.</summary>
     public event Action<IReadOnlyList<string>>? FilesDropped;
 
+    private Action? _clicked;
+
+    /// <summary>It, or a label or icon inside it, was clicked (a control
+    /// inside keeps its clicks): a header opening its section, as GTK's and
+    /// WinUI's expanders. Pointers only: give the keyboard a control inside
+    /// too.</summary>
+    public event Action? Clicked
+    {
+        add
+        {
+            if (_clicked is null) Native.Check(Native.SetBool(Id, Native.BoolProp.Clickable, true));
+            _clicked += value;
+        }
+        remove
+        {
+            _clicked -= value;
+            if (_clicked is null) Native.Check(Native.SetBool(Id, Native.BoolProp.Clickable, false));
+        }
+    }
+
     private protected override unsafe void OnEvent(Native.Event e)
     {
         switch (e.Kind)
         {
+            case Native.EventKind.Click:
+                _clicked?.Invoke();
+                break;
             case Native.EventKind.DropHover:
                 DropHover?.Invoke(e.Flag);
                 break;
