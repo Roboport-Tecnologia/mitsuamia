@@ -129,9 +129,30 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
   the welcome page's groups, changed files), text with inline runs (116
   `Run`s), popovers (`Popup`, `MenuFlyout`).
 - **In mitsuami-extras:** a resizable split (WinUI 3 has no native
-  splitter); a code view for diffs, blame and conflicts (GtkSourceView and
-  KTextEditor are native, macOS and Windows have none); the commit graph and
-  charts, drawn; the avatar.
+  splitter); the commit graph and charts, drawn; the avatar.
+- **The code view is an embedded bemtvi** (`../nxvim`), for diffs, blame,
+  the merge conflict editor and the commit message, on every platform.
+  `bemtvi-gui` already runs on mitsuami (a `GpuSurface` painted with wgpu);
+  what embedding needs:
+  - a widget, not a window: an editor surface several of which share a
+    window (a side-by-side diff, the conflict editor's three panes), from a
+    crate in bemtvi's repository with a C ABI of its own;
+  - the server in process, one per app, with a session per surface;
+  - diffs through the `bemtvi-diff` plugin, a Meld-style renderer you feed
+    a diff to: 2 or 3 read-only panes in lockstep, tints and intra-line
+    spans as extmarks, hunk navigation, and conflict resolution (ours,
+    theirs, both, picked lines), which covers SourceGit's conflict editor.
+    It diffs whole sides itself (LCS); SourceGit's diff comes from git with
+    its options (whitespace, context lines), and staging lines turns
+    selected lines into a patch for git's hunks. So its spec should also
+    take a diff already made (git's hunks), with the selection reported
+    back. It has one session at a time, and side-by-side only: SourceGit
+    also shows a unified diff;
+  - a modeless mode for people who don't use vim, coming to bemtvi's core,
+    and read-only buffers for diffs and blame;
+  - accessibility, later: a `GpuSurface` shows screen readers nothing.
+    SourceGit's own code views don't either (AvaloniaEdit has no automation
+    peers), so it isn't a step back.
 - **Accessibility gets better for free.** SourceGit sets no
   `AutomationProperties` and none of its 25 drawn controls has an
   automation peer; its 125 or so icon-only buttons likely read as unnamed.
