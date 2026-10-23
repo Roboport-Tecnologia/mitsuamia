@@ -29,7 +29,7 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image,
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId }
@@ -304,6 +304,30 @@ internal static unsafe partial class Native
         string[] data = [icon?.Data ?? ""];
         var box = icon?.ViewBox ?? default;
         return WithStrs(data, (d, _) => SetVectorIcon(node, d[0], box.X, box.Y, box.Width, box.Height));
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_image")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetImage(uint node, uint width, uint height, float scale, byte* rgba, nuint len);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_clipboard_text")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetClipboardText(Str text);
+
+    public static bool SetClipboardText(string text)
+    {
+        string[] texts = [text];
+        return WithStrs(texts, (t, _) => SetClipboardText(t[0]));
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_launch")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool Launch(uint window, Str target, [MarshalAs(UnmanagedType.U1)] bool url);
+
+    public static bool Launch(uint window, string target, bool url)
+    {
+        string[] texts = [target];
+        return WithStrs(texts, (t, _) => Launch(window, t[0], url));
     }
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_modal")]
