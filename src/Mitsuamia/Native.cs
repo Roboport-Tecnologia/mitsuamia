@@ -438,6 +438,10 @@ internal static unsafe partial class Native
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetPadding(uint node, Length top, Length end, Length bottom, Length start);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_position")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetPosition(uint node, [MarshalAs(UnmanagedType.U1)] bool absolute, Length top, Length end, Length bottom, Length start);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_margin")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetMargin(uint node, Length top, Length end, Length bottom, Length start);

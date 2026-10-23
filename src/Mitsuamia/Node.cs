@@ -219,6 +219,18 @@ public abstract unsafe class Node
     {
         set => Native.Check(Native.SetMargin(Id, value.Top, value.End, value.Bottom, value.Start));
     }
+
+    /// <summary>Takes it out of its container's flow, placed by these
+    /// insets from the container's edges (auto: not by that edge), over the
+    /// nodes in it: a drawn backdrop behind a label. Null puts it back.</summary>
+    public Thickness? Inset
+    {
+        set
+        {
+            var inset = value ?? new Thickness(Length.Auto);
+            Native.Check(Native.SetPosition(Id, value.HasValue, inset.Top, inset.End, inset.Bottom, inset.Start));
+        }
+    }
 }
 
 /// <summary>Edges, with start and end following the text's direction.</summary>
