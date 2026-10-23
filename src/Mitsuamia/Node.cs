@@ -222,6 +222,19 @@ public abstract unsafe class Node
     public float Grow { set => Native.Check(Native.SetGrow(Id, value)); }
     public Align AlignSelf { set => Native.Check(Native.SetAlignSelf(Id, (uint)value)); }
 
+    /// <summary>Where it was last laid out, in points, relative to its
+    /// native parent; zero until layout has run (read it in a posted
+    /// callback after the change that made it).</summary>
+    public unsafe (float X, float Y, float Width, float Height) Frame
+    {
+        get
+        {
+            var frame = stackalloc float[4];
+            Native.Check(Native.Frame(Id, frame));
+            return (frame[0], frame[1], frame[2], frame[3]);
+        }
+    }
+
     public Thickness Margin
     {
         set => Native.Check(Native.SetMargin(Id, value.Top, value.End, value.Bottom, value.Start));
