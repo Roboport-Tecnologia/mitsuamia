@@ -195,6 +195,10 @@ public sealed class Text : Node
     /// <summary>Shows at most this many lines, the last cut off with the
     /// platform's ellipsis; 0 shows them all.</summary>
     public int MaxLines { set => Native.Check(Native.SetNumber(Id, Native.NumberProp.MaxLines, value)); }
+
+    /// <summary>The user can select and copy it. Set before it's shown: a
+    /// platform may not change it afterwards.</summary>
+    public bool Selectable { set => Native.Check(Native.SetBool(Id, Native.BoolProp.Selectable, value)); }
 }
 
 public enum FontWeight : uint { Regular, Medium, Semibold, Bold }
