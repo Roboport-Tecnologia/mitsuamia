@@ -27,6 +27,8 @@ public class Container : Node, IEnumerable<Node>
     /// <summary>One mitsuami made already: a scroll view's content.</summary>
     internal Container(uint id) : base(id) { }
 
+    private protected Container(Native.Kind kind) : base(kind) { }
+
     public void Add(Node child) => base.Add(child);
     public void Insert(int index, Node child) => base.Add(child, index);
 
@@ -101,6 +103,9 @@ public class Container : Node, IEnumerable<Node>
             case Native.EventKind.Click:
                 _clicked?.Invoke();
                 break;
+            case Native.EventKind.PopoverShownChanged when this is Popover popover:
+                popover.Dismissed();
+                break;
             case Native.EventKind.DropHover:
                 DropHover?.Invoke(e.Flag);
                 break;
@@ -112,6 +117,41 @@ public class Container : Node, IEnumerable<Node>
 
     public IEnumerator<Node> GetEnumerator() => Children.GetEnumerator();
     IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+}
+
+/// <summary>
+/// The platform's popover (an NSPopover on macOS, a popover on GNOME, a
+/// flyout on Windows, a popup on KDE), shown by its parent while
+/// <see cref="IsShown"/>. Add it to the container it points at, after what
+/// that shows; it takes no room there. Its children are laid out as a
+/// column's, at their natural size, and the platform places it by its
+/// parent. The user dismisses it (a click outside, Escape):
+/// <see cref="Closed"/>, and it's no longer shown.
+/// </summary>
+public sealed class Popover : Container
+{
+    private bool _shown;
+
+    public Popover() : base(Native.Kind.Popover) => Native.Check(Native.SetDirection(Id, false));
+
+    public bool IsShown
+    {
+        get => _shown;
+        set
+        {
+            _shown = value;
+            Native.Check(Native.SetBool(Id, Native.BoolProp.PopoverShown, value));
+        }
+    }
+
+    /// <summary>The user dismissed it.</summary>
+    public event Action? Closed;
+
+    internal void Dismissed()
+    {
+        _shown = false;
+        Closed?.Invoke();
+    }
 }
 
 public class Column : Container
