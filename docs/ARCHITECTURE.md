@@ -198,6 +198,10 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
      there the graph will need cells that fill their rows: a mitsuami
      addition, not tried yet. A refresh keeps the rows of commits still
      there (they're keyed by SHA), and their cells show the new commits.
+     A commit's branches and tags are upstream's labels: the outline, tint
+     and lines are a `DrawnWidget` placed behind the row (`Inset`), the
+     icons and names the platform's `Icon`s and `Text`s, as the canvas
+     draws no text.
 4. **Diffs, blame and conflicts:** the code view, the largest single piece.
 5. **The remaining popups and windows,** the converter making the first pass.
 
