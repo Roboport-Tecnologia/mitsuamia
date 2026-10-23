@@ -59,6 +59,32 @@ public abstract unsafe class Node
         }
     }
 
+    private Func<IReadOnlyList<MenuEntry>>? _menuOnOpen;
+
+    /// <summary>Builds its context menu each time the platform opens it,
+    /// for a menu that depends on what's selected or under the pointer
+    /// then (a table's rows); it reads what it needs then. Null: the menu
+    /// is <see cref="ContextMenu"/>'s.</summary>
+    public Func<IReadOnlyList<MenuEntry>>? ContextMenuOnOpen
+    {
+        set
+        {
+            _menuOnOpen = value;
+            Native.Check(value is null
+                ? Native.SetContextMenuOnOpen(Id, null, 0)
+                : Native.SetContextMenuOnOpen(Id, &BuildMenu, GCHandle.ToIntPtr(_self)));
+        }
+    }
+
+    /// <summary>The platform is opening a menu built as it opens: the
+    /// node's function builds it, and it's set as its context menu.</summary>
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static void BuildMenu(nint user, uint id)
+    {
+        if (GCHandle.FromIntPtr(user).Target is not Node { _menuOnOpen: { } build } node) return;
+        Application.Guard(() => node.ContextMenu = build());
+    }
+
     /// <summary>A menu's entries in the C ABI's order, submenus between
     /// their start and end, and its items' actions by the ids given them.</summary>
     internal static (List<(uint, uint, string, bool, uint)>, Dictionary<uint, Action>) FlattenMenu(IEnumerable<MenuEntry> menu)

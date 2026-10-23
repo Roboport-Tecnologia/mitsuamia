@@ -424,6 +424,10 @@ internal static unsafe partial class Native
 
     /// <summary>Entries with their titles; the titles are passed as UTF-8,
     /// pinned for the call.</summary>
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_context_menu_on_open")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetContextMenuOnOpen(uint node, delegate* unmanaged[Cdecl]<nint, uint, void> build, nint user);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_menu")]
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool SetMenu(uint node, MenuEntry* entries, nuint count);
