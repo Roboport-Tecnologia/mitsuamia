@@ -27,6 +27,11 @@ public sealed class Icon : Node
 
     public Icon(string name) : base(Native.Kind.Icon) => Native.Check(Native.SetText(Id, Native.TextProp.Icon, name));
 
+    /// <summary>Another of the app's icons in its place. One made with a
+    /// name keeps it on WinUI, which picks an icon's element by its first
+    /// props.</summary>
+    public VectorIcon Vector { set => Native.Check(Native.SetVectorIcon(Id, value)); }
+
     /// <summary>Its side, in points; otherwise the platform's size for an
     /// icon on its own.</summary>
     public float Size { set => Native.Check(Native.SetNumber(Id, Native.NumberProp.IconSize, value)); }
