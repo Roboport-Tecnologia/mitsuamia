@@ -100,6 +100,13 @@ public abstract unsafe class Node
             OnEvent(e);
     }
 
+    /// <summary>A child mitsuami put in it already: a scroll view's content.</summary>
+    private protected void Adopt(Node child)
+    {
+        _children.Add(child);
+        child.Parent = this;
+    }
+
     private protected void Add(Node child, int? index = null)
     {
         Application.VerifyAccess();

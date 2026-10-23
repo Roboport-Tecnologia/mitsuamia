@@ -24,6 +24,9 @@ public class Container : Node, IEnumerable<Node>
 {
     public Container() : base(Native.Kind.Container) { }
 
+    /// <summary>One mitsuami made already: a scroll view's content.</summary>
+    internal Container(uint id) : base(id) { }
+
     public void Add(Node child) => base.Add(child);
     public void Insert(int index, Node child) => base.Add(child, index);
 
@@ -530,6 +533,34 @@ public sealed class Select : Node
     {
         if (e.Kind == Native.EventKind.Changed && e.ValueKind == Native.ValueKind.Index) Changed?.Invoke((int)e.Index);
     }
+}
+
+public enum ScrollAxes : uint { Vertical, Horizontal, Both }
+
+/// <summary>
+/// The platform's scroll view. What it scrolls goes in its
+/// <see cref="Content"/>, which keeps its natural length along the
+/// scrolling axes and stretches across the other: a column, unless it
+/// scrolls only sideways (a row).
+/// </summary>
+public sealed unsafe class ScrollView : Node
+{
+    public ScrollView(ScrollAxes axes = ScrollAxes.Vertical) : base(Create(axes, out var content))
+    {
+        Content = new Container(content);
+        Adopt(Content);
+    }
+
+    private static uint Create(ScrollAxes axes, out uint content)
+    {
+        uint inner = 0;
+        var outer = Native.CheckNode(Native.CreateScrollView((uint)axes, &inner));
+        content = inner;
+        return outer;
+    }
+
+    /// <summary>What it scrolls.</summary>
+    public Container Content { get; }
 }
 
 /// <summary>How tabs show where the platform has more than one way (GNOME
