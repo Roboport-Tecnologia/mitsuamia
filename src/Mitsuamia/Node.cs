@@ -228,6 +228,11 @@ public abstract unsafe class Node
     public bool IsVisible { set => Native.Check(Native.SetHidden(Id, !value)); }
 
     public float Grow { set => Native.Check(Native.SetGrow(Id, value)); }
+
+    /// <summary>How much it gives up when its container's children don't
+    /// fit, against the others (weighted by their sizes); 1 by default, 0
+    /// never.</summary>
+    public float Shrink { set => Native.Check(Native.SetShrink(Id, value)); }
     public Align AlignSelf { set => Native.Check(Native.SetAlignSelf(Id, (uint)value)); }
 
     /// <summary>Where it was last laid out, in points, relative to its

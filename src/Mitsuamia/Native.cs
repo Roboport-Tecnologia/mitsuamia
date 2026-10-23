@@ -496,6 +496,10 @@ internal static unsafe partial class Native
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetGrow(uint node, float grow);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_shrink")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetShrink(uint node, float shrink);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_align_items")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetAlignItems(uint node, uint align);
