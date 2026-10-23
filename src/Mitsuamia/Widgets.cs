@@ -532,6 +532,54 @@ public sealed class Select : Node
     }
 }
 
+/// <summary>How tabs show where the platform has more than one way (GNOME
+/// and KDE): navigation tabs by default, or a tab bar over the pages.</summary>
+public enum TabsStyle : uint { Automatic, TabBar, Navigation }
+
+/// <summary>
+/// The platform's tab view: pages, one shown at a time, and a strip of
+/// their titles to pick one. Every page stays built.
+/// </summary>
+public sealed class Tabs : Node
+{
+    private readonly List<string> _titles = [];
+
+    public Tabs() : base(Native.Kind.Tabs) { }
+
+    /// <summary>Adds a page, after the others, with its tab's title.</summary>
+    public void Add(string title, Node page)
+    {
+        _titles.Add(title);
+        Native.Check(Native.SetStrings(Id, Native.StringsProp.TabTitles, _titles));
+        base.Add(page);
+    }
+
+    public TabsStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.TabsStyle, (uint)value)); }
+
+    /// <summary>The page shown; not reported back as <see cref="Changed"/>.</summary>
+    public int SelectedIndex
+    {
+        get => _selected;
+        set
+        {
+            _selected = value;
+            Native.Check(Native.SetIndex(Id, Native.IndexProp.SelectedIndex, value));
+        }
+    }
+
+    private int _selected;
+
+    /// <summary>The user picked a tab: its index.</summary>
+    public event Action<int>? Changed;
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        if (e.Kind != Native.EventKind.Changed || e.ValueKind != Native.ValueKind.Index) return;
+        _selected = (int)e.Index;
+        Changed?.Invoke(_selected);
+    }
+}
+
 /// <summary>The platform's busy indicator, for work of unknown length.</summary>
 public sealed class Spinner : Node
 {
