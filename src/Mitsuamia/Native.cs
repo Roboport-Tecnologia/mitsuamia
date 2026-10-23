@@ -147,6 +147,16 @@ internal static unsafe partial class Native
     public static bool ListSetKeys(uint list, IReadOnlyList<string> keys) => WithStrs(keys, (p, n) => ListSetKeys(list, p, n));
     public static bool ListSetSelected(uint list, IReadOnlyList<string> keys) => WithStrs(keys, (p, n) => ListSetSelected(list, p, n));
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_list_scroll_to")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool ListScrollTo(uint list, Str key);
+
+    public static bool ListScrollTo(uint list, string key)
+    {
+        string[] keys = [key];
+        return WithStrs(keys, (k, _) => ListScrollTo(list, k[0]));
+    }
+
     public static string ListSelectedKey(uint list, nuint index)
     {
         byte* ptr;

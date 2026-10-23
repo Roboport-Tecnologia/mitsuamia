@@ -252,6 +252,11 @@ public class ListView<T> : ListView where T : class
         set => SelectedItems = value is null ? [] : [value];
     }
 
+    /// <summary>Scrolls just enough to show the item's row, shown yet or
+    /// not; an item the list doesn't have yet is scrolled to once it has
+    /// it (set with the same <see cref="Items"/>).</summary>
+    public void ScrollTo(T item) => Native.Check(Native.ListScrollTo(Id, key(item)));
+
     /// <summary>The user changed the selection.</summary>
     public event Action<IReadOnlyList<T>>? SelectionChanged;
 
