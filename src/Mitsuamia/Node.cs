@@ -53,40 +53,48 @@ public abstract unsafe class Node
     {
         set
         {
-            var flat = new List<(uint, uint, string, bool, uint)>();
-            var actions = new Dictionary<uint, Action>();
-            void Flatten(IEnumerable<MenuEntry> entries)
-            {
-                foreach (var entry in entries)
-                {
-                    switch (entry)
-                    {
-                        case MenuItem item:
-                            var id = (uint)actions.Count + 1;
-                            actions[id] = item.Action;
-                            uint check = item.Checked switch
-                            {
-                                null => 0,
-                                bool on when item.Radio => on ? 4u : 3u,
-                                bool on => on ? 2u : 1u,
-                            };
-                            flat.Add((0, id, item.Title, item.Enabled, check));
-                            break;
-                        case MenuSeparator:
-                            flat.Add((1, 0, "", true, 0));
-                            break;
-                        case Submenu sub:
-                            flat.Add((2, 0, sub.Title, true, 0));
-                            Flatten(sub.Entries);
-                            flat.Add((3, 0, "", true, 0));
-                            break;
-                    }
-                }
-            }
-            Flatten(value);
+            var (flat, actions) = FlattenMenu(value);
             Native.Check(Native.SetContextMenu(Id, flat));
             _menuActions = actions;
         }
+    }
+
+    /// <summary>A menu's entries in the C ABI's order, submenus between
+    /// their start and end, and its items' actions by the ids given them.</summary>
+    internal static (List<(uint, uint, string, bool, uint)>, Dictionary<uint, Action>) FlattenMenu(IEnumerable<MenuEntry> menu)
+    {
+        var flat = new List<(uint, uint, string, bool, uint)>();
+        var actions = new Dictionary<uint, Action>();
+        void Flatten(IEnumerable<MenuEntry> entries)
+        {
+            foreach (var entry in entries)
+            {
+                switch (entry)
+                {
+                    case MenuItem item:
+                        var id = (uint)actions.Count + 1;
+                        actions[id] = item.Action;
+                        uint check = item.Checked switch
+                        {
+                            null => 0,
+                            bool on when item.Radio => on ? 4u : 3u,
+                            bool on => on ? 2u : 1u,
+                        };
+                        flat.Add((0, id, item.Title, item.Enabled, check));
+                        break;
+                    case MenuSeparator:
+                        flat.Add((1, 0, "", true, 0));
+                        break;
+                    case Submenu sub:
+                        flat.Add((2, 0, sub.Title, true, 0));
+                        Flatten(sub.Entries);
+                        flat.Add((3, 0, "", true, 0));
+                        break;
+                }
+            }
+        }
+        Flatten(menu);
+        return (flat, actions);
     }
 
     /// <summary>What tests find it by.</summary>

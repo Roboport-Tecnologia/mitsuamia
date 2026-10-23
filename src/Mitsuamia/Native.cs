@@ -29,7 +29,7 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton,
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId }
@@ -41,7 +41,7 @@ internal static unsafe partial class Native
     public enum EventKind : uint
     {
         Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search, TabCloseRequested, TabMoved, NewTabRequested,
-        ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction,
+        ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction, MenuItem,
     }
     public enum ValueKind : uint { None, Text, Bool, Number, Index }
 
@@ -414,7 +414,18 @@ internal static unsafe partial class Native
 
     /// <summary>Entries with their titles; the titles are passed as UTF-8,
     /// pinned for the call.</summary>
-    public static bool SetContextMenu(uint node, IReadOnlyList<(uint Kind, uint Id, string Title, bool Enabled, uint Check)> entries)
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_menu")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetMenu(uint node, MenuEntry* entries, nuint count);
+
+    public static bool SetContextMenu(uint node, IReadOnlyList<(uint Kind, uint Id, string Title, bool Enabled, uint Check)> entries) =>
+        SetMenuEntries(node, entries, button: false);
+
+    /// <summary>A menu button's menu, as <see cref="SetContextMenu"/>'s entries.</summary>
+    public static bool SetMenu(uint node, IReadOnlyList<(uint Kind, uint Id, string Title, bool Enabled, uint Check)> entries) =>
+        SetMenuEntries(node, entries, button: true);
+
+    private static bool SetMenuEntries(uint node, IReadOnlyList<(uint Kind, uint Id, string Title, bool Enabled, uint Check)> entries, bool button)
     {
         var titles = entries.Select(e => e.Title).ToArray();
         return WithStrs(titles, (strs, _) =>
@@ -425,7 +436,7 @@ internal static unsafe partial class Native
                 var e = entries[i];
                 native[i] = new MenuEntry { Kind = e.Kind, Id = e.Id, Title = strs[i], Enabled = (byte)(e.Enabled ? 1 : 0), Check = e.Check };
             }
-            fixed (MenuEntry* p = native) return SetContextMenu(node, p, (nuint)native.Length);
+            fixed (MenuEntry* p = native) return button ? SetMenu(node, p, (nuint)native.Length) : SetContextMenu(node, p, (nuint)native.Length);
         });
     }
 

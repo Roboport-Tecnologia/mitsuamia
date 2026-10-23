@@ -255,6 +255,47 @@ public enum Orientation : uint { Horizontal, Vertical }
 
 /// <summary>The platform's line between groups of content, across its
 /// container (horizontal) or, vertical, between items in a row.</summary>
+/// <summary>
+/// The platform's button that opens a menu of actions (a pull-down on
+/// macOS, a menu button on GNOME, a drop-down button on Windows), with a
+/// <see cref="Button"/>'s caption, icon and style.
+/// </summary>
+public sealed class MenuButton : Node
+{
+    private Dictionary<uint, Action>? _actions;
+
+    public MenuButton(string label = "") : base(Native.Kind.MenuButton) => Label = label;
+
+    public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
+    public ButtonStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.ButtonStyle, (uint)value)); }
+
+    /// <summary>The app's own icon before its caption.</summary>
+    public VectorIcon? Icon { set => Native.Check(Native.SetVectorIcon(Id, value)); }
+
+    /// <summary>Shows only its icon; the caption stays its accessible name.</summary>
+    public bool IconOnly { set => Native.Check(Native.SetBool(Id, Native.BoolProp.IconOnly, value)); }
+
+    /// <summary>Its icon's colour, in place of the platform's.</summary>
+    public Color IconColor { set => Native.Check(value.Set(Id)); }
+
+    /// <summary>What it opens; each item runs its action when chosen.</summary>
+    public IReadOnlyList<MenuEntry> Menu
+    {
+        set
+        {
+            var (flat, actions) = FlattenMenu(value);
+            Native.Check(Native.SetMenu(Id, flat));
+            _actions = actions;
+        }
+    }
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        if (e.Kind == Native.EventKind.MenuItem && _actions?.GetValueOrDefault((uint)e.Index) is { } action)
+            action();
+    }
+}
+
 public sealed class Separator : Node
 {
     public Separator(Orientation orientation = Orientation.Horizontal) : base(Native.Kind.Separator) =>
