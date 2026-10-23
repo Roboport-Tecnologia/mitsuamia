@@ -32,6 +32,10 @@ public class Container : Node, IEnumerable<Node>
 
     public Length Gap { set => Native.Check(Native.SetGap(Id, value)); }
 
+    /// <summary>Children that don't fit go on to another line (a row's) or
+    /// column (a column's), as chips and tags do.</summary>
+    public bool Wrap { set => Native.Check(Native.SetWrap(Id, value)); }
+
     public Thickness Padding
     {
         set => Native.Check(Native.SetPadding(Id, value.Top, value.End, value.Bottom, value.Start));
