@@ -531,6 +531,11 @@ public sealed class SearchInput : TextField
 
     public event Action<string>? Search;
 
+    /// <summary>Searches on Return (and when cleared), not as the user
+    /// types: for searches that take a while, with each platform's own
+    /// setting for it.</summary>
+    public bool SearchOnReturn { set => Native.Check(Native.SetBool(Id, Native.BoolProp.SearchOnReturn, value)); }
+
     /// <summary>What it suggests for its text, in a list under it as the
     /// platform shows a field's suggestions: a title and an optional second
     /// line each. The field keeps the keyboard: the arrows move through the
