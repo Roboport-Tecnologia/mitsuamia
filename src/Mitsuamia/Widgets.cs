@@ -644,6 +644,34 @@ public sealed class Select : Node
     }
 }
 
+/// <summary>
+/// The platform's radio buttons, one per option, down a column. None is
+/// chosen until the app or the user picks one.
+/// </summary>
+public sealed class RadioGroup : Node
+{
+    public RadioGroup(string label = "") : base(Native.Kind.RadioGroup) => Label = label;
+
+    /// <summary>Its accessible name.</summary>
+    public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
+
+    public IReadOnlyList<string> Options
+    {
+        set => Native.Check(Native.SetStrings(Id, Native.StringsProp.Options, value));
+    }
+
+    /// <summary>The chosen option; -1 for none.</summary>
+    public int SelectedIndex { set => Native.Check(Native.SetIndex(Id, Native.IndexProp.SelectedIndex, value)); }
+
+    /// <summary>The user chose an option: its index.</summary>
+    public event Action<int>? Changed;
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        if (e.Kind == Native.EventKind.Changed && e.ValueKind == Native.ValueKind.Index) Changed?.Invoke((int)e.Index);
+    }
+}
+
 public enum ScrollAxes : uint { Vertical, Horizontal, Both }
 
 /// <summary>
