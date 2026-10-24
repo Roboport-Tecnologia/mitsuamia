@@ -41,7 +41,7 @@ internal static unsafe partial class Native
     public enum EventKind : uint
     {
         Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search, TabCloseRequested, TabMoved, NewTabRequested,
-        ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction, MenuItem, PopoverShownChanged, SuggestionChosen,
+        ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction, MenuItem, PopoverShownChanged, SuggestionChosen, Key,
     }
     public enum ValueKind : uint { None, Text, Bool, Number, Index }
 
@@ -428,6 +428,33 @@ internal static unsafe partial class Native
         public Str Title;
         public byte Enabled;
         public uint Check;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    public struct Shortcut
+    {
+        public uint Key;
+        public uint Ch;
+        public byte Primary;
+        public byte Shift;
+        public byte Alt;
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_keys")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetKeys(uint node, Shortcut* keys, nuint count);
+
+    public static bool SetKeys(uint node, IReadOnlyList<Mitsuamia.Shortcut> keys)
+    {
+        var native = keys.Select(k => new Shortcut
+        {
+            Key = (uint)k.Key,
+            Ch = k.Code,
+            Primary = k.Primary ? (byte)1 : (byte)0,
+            Shift = k.Shift ? (byte)1 : (byte)0,
+            Alt = k.Alt ? (byte)1 : (byte)0,
+        }).ToArray();
+        fixed (Shortcut* p = native) return SetKeys(node, p, (nuint)native.Length);
     }
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_context_menu")]

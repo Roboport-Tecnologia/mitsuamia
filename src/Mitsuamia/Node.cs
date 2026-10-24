@@ -123,6 +123,25 @@ public abstract unsafe class Node
         return (flat, actions);
     }
 
+    // The keys it takes, and what each does.
+    private List<(Shortcut Key, Action Action)>? _keys;
+
+    /// <summary>
+    /// Runs <paramref name="action"/> when <paramref name="key"/> is pressed
+    /// while it (a container, list or table), or a control in it, has
+    /// keyboard focus, and the focused control doesn't use the key itself.
+    /// A key goes to the nearest node round the focused control that takes
+    /// it. Nothing shows keys taken this way: give the command a menu item
+    /// or a button too.
+    /// </summary>
+    public void OnKey(Shortcut key, Action action)
+    {
+        _keys ??= [];
+        _keys.RemoveAll(k => k.Key == key);
+        _keys.Add((key, action));
+        Native.Check(Native.SetKeys(Id, _keys.Select(k => k.Key).ToArray()));
+    }
+
     /// <summary>What tests find it by.</summary>
     public string TestId { set => Native.Check(Native.SetText(Id, Native.TextProp.TestId, value)); }
 
@@ -130,6 +149,8 @@ public abstract unsafe class Node
     {
         if (e.Kind == Native.EventKind.ContextMenuItem && _menuActions?.GetValueOrDefault((uint)e.Index) is { } action)
             action();
+        else if (e.Kind == Native.EventKind.Key && _keys is { } keys && (int)e.Index < keys.Count)
+            keys[(int)e.Index].Action();
         else
             OnEvent(e);
     }
