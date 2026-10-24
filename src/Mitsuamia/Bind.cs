@@ -30,7 +30,7 @@ public static class Bind
     }
 
     /// <summary>A text field's text, both ways.</summary>
-    public static void Value(TextInput input, INotifyPropertyChanged source, string property, Func<string?> get,
+    public static void Value(TextField input, INotifyPropertyChanged source, string property, Func<string?> get,
         Action<string> set, Node? owner = null)
     {
         OneWay(source, property, get, v => input.Value = v ?? "", owner ?? input);

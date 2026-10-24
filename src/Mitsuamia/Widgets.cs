@@ -509,6 +509,13 @@ public abstract class TextField : Node
     }
 }
 
+/// <summary>The platform's text view for several lines: Return starts a
+/// new one.</summary>
+public sealed class TextArea : TextField
+{
+    public TextArea() : base(Native.Kind.TextArea) { }
+}
+
 public sealed class TextInput : TextField
 {
     public TextInput() : base(Native.Kind.TextInput) { }
