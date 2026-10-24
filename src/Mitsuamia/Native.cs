@@ -41,7 +41,7 @@ internal static unsafe partial class Native
     public enum EventKind : uint
     {
         Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search, TabCloseRequested, TabMoved, NewTabRequested,
-        ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction, MenuItem, PopoverShownChanged,
+        ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction, MenuItem, PopoverShownChanged, SuggestionChosen,
     }
     public enum ValueKind : uint { None, Text, Bool, Number, Index }
 
@@ -427,6 +427,17 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_context_menu_on_open")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetContextMenuOnOpen(uint node, delegate* unmanaged[Cdecl]<nint, uint, void> build, nint user);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_suggestions")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetSuggestions(uint node, Str* titles, Str* details, nuint count);
+
+    public static bool SetSuggestions(uint node, IReadOnlyList<(string Title, string? Detail)> suggestions)
+    {
+        var titles = suggestions.Select(s => s.Title).ToArray();
+        var details = suggestions.Select(s => s.Detail ?? "").ToArray();
+        return WithStrs(titles, (t, n) => WithStrs(details, (d, _) => SetSuggestions(node, t, d, n)));
+    }
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_menu")]
     [return: MarshalAs(UnmanagedType.U1)]

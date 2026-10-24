@@ -531,10 +531,25 @@ public sealed class SearchInput : TextField
 
     public event Action<string>? Search;
 
+    /// <summary>What it suggests for its text, in a list under it as the
+    /// platform shows a field's suggestions: a title and an optional second
+    /// line each. The field keeps the keyboard: the arrows move through the
+    /// list, Return or a click picks (<see cref="SuggestionChosen"/>),
+    /// Escape hides it. Empty: none.</summary>
+    public IReadOnlyList<(string Title, string? Detail)> Suggestions
+    {
+        set => Native.Check(Native.SetSuggestions(Id, value));
+    }
+
+    /// <summary>The user picked a suggestion, by its index. The text is the
+    /// app's to set.</summary>
+    public event Action<int>? SuggestionChosen;
+
     private protected override unsafe void OnEvent(Native.Event e)
     {
         base.OnEvent(e);
         if (e.Kind == Native.EventKind.Search) Search?.Invoke(Native.Utf8(e.Text, e.TextLen));
+        else if (e.Kind == Native.EventKind.SuggestionChosen) SuggestionChosen?.Invoke((int)e.Index);
     }
 }
 
