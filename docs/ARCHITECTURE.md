@@ -202,6 +202,20 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
      and lines are a `DrawnWidget` placed behind the row (`Inset`), the
      icons and names the platform's `Icon`s and `Text`s, as the canvas
      draws no text.
+   - Local changes and committing (2026-10-24): the unstaged and staged
+     changes in `ListView`s (list, grid or tree, as upstream's
+     `ChangeCollectionView`, which flattens its tree into rows itself), a
+     row's key holding the change's state so a change that turns from
+     modified to deleted gets its new mark; upstream's menus built as they
+     open, its keys, its stash, discard and ignore popups; the commit
+     message in the platform's text view, without upstream's guide line
+     and suggestions (a native text view has neither), its subject count
+     under it. The diff pane waits for the code view (4). Upstream's
+     notifications float over the page; here they're the platform's
+     alerts, one at a time, as Git clients on each platform show a failed
+     command (the maintainer's choice). Ran on AppKit: staging and
+     committing on a scratch repository, and a pre-commit hook's refusal
+     reaching an alert.
 4. **Diffs, blame and conflicts:** the code view, the largest single piece.
 5. **The remaining popups and windows,** the converter making the first pass.
 
