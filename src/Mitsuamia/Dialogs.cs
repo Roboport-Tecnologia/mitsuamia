@@ -32,6 +32,17 @@ public static unsafe class Dialogs
     public static Task<string[]> OpenFiles(Window? on, string title = "", bool multiple = false, string startFolder = "") =>
         Open(on, title, folders: false, multiple, startFolder);
 
+    /// <summary>Asks where to save a file, named <paramref name="name"/>;
+    /// null if cancelled.</summary>
+    public static Task<string?> SaveFile(Window? on, string title = "", string name = "", string startFolder = "")
+    {
+        Application.VerifyAccess();
+        var answer = new TaskCompletionSource<string[]>();
+        var user = GCHandle.ToIntPtr(GCHandle.Alloc(answer));
+        Native.Check(Native.SaveFile(on?.Id ?? 0, title, name, startFolder, &Opened, user));
+        return answer.Task.ContinueWith(t => t.Result.Length > 0 ? t.Result[0] : null, TaskContinuationOptions.ExecuteSynchronously);
+    }
+
     private static Task<string[]> Open(Window? on, string title, bool folders, bool multiple, string startFolder)
     {
         Application.VerifyAccess();
