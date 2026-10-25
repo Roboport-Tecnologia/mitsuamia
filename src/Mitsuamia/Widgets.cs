@@ -614,6 +614,22 @@ public sealed class TextInput : TextField
     }
 }
 
+/// <summary>The platform's password field: it hides what's typed, as
+/// the platform's own does.</summary>
+public sealed class PasswordInput : TextField
+{
+    public PasswordInput() : base(Native.Kind.PasswordInput) { }
+
+    /// <summary>The user pressed Return.</summary>
+    public event Action? Submit;
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        base.OnEvent(e);
+        if (e.Kind == Native.EventKind.Submit) Submit?.Invoke();
+    }
+}
+
 /// <summary>The platform's search field. It searches when the platform
 /// does: after a pause in typing, on Return, when cleared.</summary>
 public sealed class SearchInput : TextField
