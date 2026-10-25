@@ -341,6 +341,31 @@ public sealed class MenuButton : Node
         }
     }
 
+    private Func<IReadOnlyList<MenuEntry>>? _menuOnOpen;
+
+    /// <summary>Builds its menu each time the platform opens it, for a
+    /// menu that depends on what's true then; it reads what it needs then.
+    /// Null: the menu is <see cref="Menu"/>'s.</summary>
+    public unsafe Func<IReadOnlyList<MenuEntry>>? MenuOnOpen
+    {
+        set
+        {
+            _menuOnOpen = value;
+            Native.Check(value is null
+                ? Native.SetMenuOnOpen(Id, null, 0)
+                : Native.SetMenuOnOpen(Id, &BuildMenu, Handle));
+        }
+    }
+
+    /// <summary>The platform is opening the menu: the function builds it,
+    /// and it's set as the menu.</summary>
+    [System.Runtime.InteropServices.UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static void BuildMenu(nint user, uint id)
+    {
+        if (System.Runtime.InteropServices.GCHandle.FromIntPtr(user).Target is not MenuButton { _menuOnOpen: { } build } button) return;
+        Application.Guard(() => button.Menu = build());
+    }
+
     private protected override void OnEvent(Native.Event e)
     {
         if (e.Kind == Native.EventKind.MenuItem && _actions?.GetValueOrDefault((uint)e.Index) is { } action)

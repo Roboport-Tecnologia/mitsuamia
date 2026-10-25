@@ -505,6 +505,10 @@ internal static unsafe partial class Native
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetContextMenuOnOpen(uint node, delegate* unmanaged[Cdecl]<nint, uint, void> build, nint user);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_menu_on_open")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetMenuOnOpen(uint node, delegate* unmanaged[Cdecl]<nint, uint, void> build, nint user);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_suggestions")]
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool SetSuggestions(uint node, Str* titles, Str* details, nuint count);

@@ -59,6 +59,9 @@ public abstract unsafe class Node
         }
     }
 
+    /// <summary>A weak handle to it, for the C ABI's callbacks.</summary>
+    private protected nint Handle => GCHandle.ToIntPtr(_self);
+
     private Func<IReadOnlyList<MenuEntry>>? _menuOnOpen;
 
     /// <summary>Builds its context menu each time the platform opens it,
@@ -72,7 +75,7 @@ public abstract unsafe class Node
             _menuOnOpen = value;
             Native.Check(value is null
                 ? Native.SetContextMenuOnOpen(Id, null, 0)
-                : Native.SetContextMenuOnOpen(Id, &BuildMenu, GCHandle.ToIntPtr(_self)));
+                : Native.SetContextMenuOnOpen(Id, &BuildMenu, Handle));
         }
     }
 
