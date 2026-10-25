@@ -827,6 +827,11 @@ public sealed unsafe class ScrollView : Node
 
     /// <summary>What it scrolls.</summary>
     public Container Content { get; }
+
+    /// <summary>Scrolls to this offset of its content, in points, clamped
+    /// to the content as laid out (past the end is the end): once layout
+    /// has run.</summary>
+    public void ScrollTo(float x, float y) => Native.Check(Native.ScrollTo(Id, x, y));
 }
 
 /// <summary>How tabs show where the platform has more than one way (GNOME

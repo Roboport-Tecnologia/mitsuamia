@@ -107,6 +107,10 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, EntryPoint = "mitsuami_create_scroll_view")]
     public static partial uint CreateScrollView(uint axes, uint* content);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_scroll_to")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool ScrollTo(uint id, float x, float y);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_create_table")]
     private static partial uint CreateTable(TableCallbacks callbacks, TableColumn* columns, nuint count);
 
