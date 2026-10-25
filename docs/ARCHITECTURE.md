@@ -216,6 +216,15 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
      command (the maintainer's choice). Ran on AppKit: staging and
      committing on a scratch repository, and a pre-commit hook's refusal
      reaching an alert.
+   - Stashes (2026-10-24): upstream's page, the stashes in a `ListView`
+     (the branch a stash was made on a chip: a `DrawnWidget` pill behind
+     the platform's text) over the selected one's changes, untracked
+     files included; its menus, keys and the apply, drop, clear and
+     branch popups. Upstream hides the branches beside it, and beside the
+     local changes when the user collapses them: mitsuami's split
+     collapses a hidden pane, as the platforms' own splits do. The diff
+     pane waits for the code view (4). Ran on AppKit in captures; not
+     yet tried by hand.
 4. **Diffs, blame and conflicts:** the code view, the largest single piece.
 5. **The remaining popups and windows,** the converter making the first pass.
 
