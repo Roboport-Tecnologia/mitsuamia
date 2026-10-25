@@ -368,6 +368,10 @@ internal static unsafe partial class Native
         return WithStrs(texts, (t, _) => SetClipboardText(t[0]));
     }
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_clipboard_text")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool ClipboardText(delegate* unmanaged[Cdecl]<nint, Str*, nuint, void> answer, nint user);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_launch")]
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool Launch(uint window, Str target, [MarshalAs(UnmanagedType.U1)] bool url);

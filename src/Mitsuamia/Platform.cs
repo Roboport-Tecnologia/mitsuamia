@@ -1,3 +1,6 @@
+using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+
 namespace Mitsuamia;
 
 /// <summary>The platform's clipboard.</summary>
@@ -9,6 +12,25 @@ public static class Clipboard
     {
         Application.VerifyAccess();
         Native.Check(Native.SetClipboardText(text));
+    }
+
+    /// <summary>Its text, or null when it holds none.</summary>
+    public static unsafe Task<string?> GetText()
+    {
+        Application.VerifyAccess();
+        var answer = new TaskCompletionSource<string?>();
+        var user = GCHandle.ToIntPtr(GCHandle.Alloc(answer));
+        Native.Check(Native.ClipboardText(&Answered, user));
+        return answer.Task;
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private static unsafe void Answered(nint user, Native.Str* text, nuint count)
+    {
+        var handle = GCHandle.FromIntPtr(user);
+        var answer = (TaskCompletionSource<string?>)handle.Target!;
+        handle.Free();
+        answer.SetResult(count > 0 ? Native.Utf8(text[0].Ptr, text[0].Len) : null);
     }
 }
 
