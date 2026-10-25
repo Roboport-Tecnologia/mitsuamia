@@ -604,6 +604,22 @@ public sealed class TextArea : TextField
     public TextArea() : base(Native.Kind.TextArea) { }
 
     internal TextArea(uint id, Action<string> send) : base(id, send) { }
+
+    /// <summary>Its text in one of the platform's text styles: monospace
+    /// for code or logs.</summary>
+    public TextStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.TextStyle, (uint)value)); }
+
+    /// <summary>Shows its text, which can be selected and copied, but not
+    /// edited.</summary>
+    public bool ReadOnly { set => Native.Check(Native.SetBool(Id, Native.BoolProp.ReadOnly, value)); }
+
+    /// <summary>Its lines wrap to its width, as they do unless set false;
+    /// without, they scroll sideways.</summary>
+    public bool LineWrap { set => Native.Check(Native.SetBool(Id, Native.BoolProp.LineWrap, value)); }
+
+    /// <summary>Keeps its end in view as its text is set, while it's there:
+    /// a log that grows. Scrolled up, it stays put.</summary>
+    public bool FollowsEnd { set => Native.Check(Native.SetBool(Id, Native.BoolProp.FollowsEnd, value)); }
 }
 
 public sealed class TextInput : TextField
