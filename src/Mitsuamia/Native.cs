@@ -213,6 +213,44 @@ internal static unsafe partial class Native
         return id;
     }
 
+    // mitsuami-extras' C ABI, in its library with mitsuami's.
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_extras_create_text_area")]
+    private static partial uint ExtrasCreateTextArea(Str placeholder, uint* area);
+
+    public static (uint Column, uint Area) ExtrasCreateTextArea(string placeholder)
+    {
+        uint column = 0;
+        var area = new uint[1];
+        string[] texts = [placeholder];
+        WithStrs(texts, (p, _) =>
+        {
+            fixed (uint* a = area) column = ExtrasCreateTextArea(p[0], a);
+            return column != 0;
+        });
+        return (CheckNode(column), area[0]);
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_extras_text_area_set_value")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool ExtrasTextAreaSetValue(uint column, Str value);
+
+    public static bool ExtrasTextAreaSetValue(uint column, string value)
+    {
+        string[] texts = [value];
+        return WithStrs(texts, (v, _) => ExtrasTextAreaSetValue(column, v[0]));
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_extras_text_area_set_placeholder")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool ExtrasTextAreaSetPlaceholder(uint column, Str placeholder);
+
+    public static bool ExtrasTextAreaSetPlaceholder(uint column, string placeholder)
+    {
+        string[] texts = [placeholder];
+        return WithStrs(texts, (p, _) => ExtrasTextAreaSetPlaceholder(column, p[0]));
+    }
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_drawn_set_semantics")]
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool DrawnSetSemantics(uint node, uint role, Str value, uint actions);

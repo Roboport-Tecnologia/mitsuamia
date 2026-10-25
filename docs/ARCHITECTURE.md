@@ -131,6 +131,12 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
   the welcome page's groups, changed files), text with inline runs (116
   `Run`s), popovers (`Popup`, `MenuFlyout`).
 - **In mitsuami-extras:** the commit graph and charts, drawn; the avatar.
+  The first to come through: `TextAreaWithPlaceholder` (2026-10-24), for
+  the commit, tag, stash and rebase messages, whose placeholder Qt's and
+  XAML's text areas show and AppKit's and GTK's don't (extras lays a hint
+  over them). It's extras' first C ABI (`mitsuami-extras-ffi`), one
+  library with mitsuami's, which mitsuamia loads in its place
+  (`MITSUAMI_FFI`); its class is in `Extras.cs`.
 - **The code view is an embedded bemtvi** (`../nxvim`), for diffs, blame,
   the merge conflict editor and the commit message, on every platform.
   `bemtvi-gui` already runs on mitsuami (a `GpuSurface` painted with wgpu);

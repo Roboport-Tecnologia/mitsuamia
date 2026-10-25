@@ -477,8 +477,16 @@ public sealed class Checkbox : Node
 public abstract class TextField : Node
 {
     private string _value = "";
+    /// <summary>Where its value goes, when not straight to the node (an
+    /// extras widget's area, whose hint follows it).</summary>
+    private readonly Action<string>? _send;
 
     private protected TextField(Native.Kind kind) : base(kind) { }
+
+    private protected TextField(uint id, Action<string> send) : base(id)
+    {
+        _send = send;
+    }
 
     public string Placeholder { set => Native.Check(Native.SetText(Id, Native.TextProp.Placeholder, value)); }
 
@@ -493,7 +501,8 @@ public abstract class TextField : Node
         {
             if (_value == value) return;
             _value = value;
-            Native.Check(Native.SetText(Id, Native.TextProp.Value, value));
+            if (_send is not null) _send(value);
+            else Native.Check(Native.SetText(Id, Native.TextProp.Value, value));
         }
     }
 
@@ -514,6 +523,8 @@ public abstract class TextField : Node
 public sealed class TextArea : TextField
 {
     public TextArea() : base(Native.Kind.TextArea) { }
+
+    internal TextArea(uint id, Action<string> send) : base(id, send) { }
 }
 
 public sealed class TextInput : TextField
