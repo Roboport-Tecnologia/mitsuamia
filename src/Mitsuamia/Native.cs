@@ -29,7 +29,7 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton, Popover, RadioGroup,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton, Popover, RadioGroup, SplitButton,
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId }

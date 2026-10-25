@@ -344,6 +344,50 @@ public sealed class MenuButton : Node
     }
 }
 
+/// <summary>
+/// The platform's button with a menu of other actions beside its own (a
+/// combo button on macOS, a split button on GNOME and Windows; on KDE, an
+/// arrow button joined to it), with a <see cref="Button"/>'s caption, icon,
+/// style and click.
+/// </summary>
+public sealed class SplitButton : Node
+{
+    private Dictionary<uint, Action>? _actions;
+
+    public SplitButton(string label = "") : base(Native.Kind.SplitButton) => Label = label;
+
+    public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
+    public ButtonStyle Style { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.ButtonStyle, (uint)value)); }
+
+    /// <summary>The app's own icon before its caption.</summary>
+    public VectorIcon? Icon { set => Native.Check(Native.SetVectorIcon(Id, value)); }
+
+    /// <summary>Shows only its icon; the caption stays its accessible name.</summary>
+    public bool IconOnly { set => Native.Check(Native.SetBool(Id, Native.BoolProp.IconOnly, value)); }
+
+    public event Action? Click;
+
+    /// <summary>What its arrow opens; each item runs its action when
+    /// chosen.</summary>
+    public IReadOnlyList<MenuEntry> Menu
+    {
+        set
+        {
+            var (flat, actions) = FlattenMenu(value);
+            Native.Check(Native.SetMenu(Id, flat));
+            _actions = actions;
+        }
+    }
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        if (e.Kind == Native.EventKind.Click)
+            Click?.Invoke();
+        else if (e.Kind == Native.EventKind.MenuItem && _actions?.GetValueOrDefault((uint)e.Index) is { } action)
+            action();
+    }
+}
+
 public sealed class Separator : Node
 {
     public Separator(Orientation orientation = Orientation.Horizontal) : base(Native.Kind.Separator) =>
