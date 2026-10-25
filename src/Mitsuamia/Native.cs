@@ -33,7 +33,7 @@ internal static unsafe partial class Native
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId, Error }
-    public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly, Header, Clickable, SidebarPane, Selectable, PopoverShown, SearchOnReturn, ClickThrough, ReadOnly, LineWrap, FollowsEnd }
+    public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly, Header, Clickable, SidebarPane, Selectable, PopoverShown, SearchOnReturn, ClickThrough, ReadOnly, LineWrap, FollowsEnd, Hover }
     public enum NumberProp : uint { Number, EstimatedRowHeight, IconSize, MaxLines }
     public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle, HeaderEdge, Orientation, FontWeight, TabsStyle }
     public enum StringsProp : uint { TabTitles, Options }
@@ -41,7 +41,7 @@ internal static unsafe partial class Native
     public enum EventKind : uint
     {
         Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search, TabCloseRequested, TabMoved, NewTabRequested,
-        ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction, MenuItem, PopoverShownChanged, SuggestionChosen, Key,
+        ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction, MenuItem, PopoverShownChanged, SuggestionChosen, Key, Hover,
     }
     public enum ValueKind : uint { None, Text, Bool, Number, Index }
 

@@ -100,12 +100,33 @@ public class Container : Node, IEnumerable<Node>
         }
     }
 
+    private Action<bool>? _hover;
+
+    /// <summary>The pointer came over it, or anything inside it (true), or
+    /// left: a row's buttons that show on hover.</summary>
+    public event Action<bool>? Hover
+    {
+        add
+        {
+            if (_hover is null) Native.Check(Native.SetBool(Id, Native.BoolProp.Hover, true));
+            _hover += value;
+        }
+        remove
+        {
+            _hover -= value;
+            if (_hover is null) Native.Check(Native.SetBool(Id, Native.BoolProp.Hover, false));
+        }
+    }
+
     private protected override unsafe void OnEvent(Native.Event e)
     {
         switch (e.Kind)
         {
             case Native.EventKind.Click:
                 _clicked?.Invoke();
+                break;
+            case Native.EventKind.Hover:
+                _hover?.Invoke(e.Flag);
                 break;
             case Native.EventKind.PopoverShownChanged when this is Popover popover:
                 popover.Dismissed();
