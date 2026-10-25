@@ -12,6 +12,40 @@ public sealed record MenuItem(string Title, Action Action) : MenuEntry
     public bool Enabled { get; init; } = true;
     public bool? Checked { get; init; }
     public bool Radio { get; init; }
+    /// <summary>Shown by it; in the menu bar it also chooses it.</summary>
+    public Shortcut? Shortcut { get; init; }
+    /// <summary>An item every app has, which a platform may move to a place
+    /// of its own (macOS's app menu). Menu bars only.</summary>
+    public MenuRole Role { get; init; }
+}
+
+public enum MenuRole : uint { None, About, Settings, Quit }
+
+/// <summary>A menu entry as the C ABI takes it.</summary>
+internal readonly record struct FlatMenuEntry(uint Kind, uint Id, string Title, bool Enabled, uint Check, MenuRole Role = MenuRole.None, Shortcut? Shortcut = null);
+
+/// <summary>
+/// The app's menu bar: the platform's (macOS's, with the roles' items in
+/// the app menu), or however it shows an app's menus. Set it again to
+/// change it.
+/// </summary>
+public static unsafe class MenuBar
+{
+    private static Dictionary<uint, Action> s_actions = [];
+
+    public static void Set(IReadOnlyList<Submenu> menus)
+    {
+        var (flat, actions) = Node.FlattenMenu(menus);
+        s_actions = actions;
+        Native.Check(Native.SetMenuBar(flat, &Chosen));
+    }
+
+    [System.Runtime.InteropServices.UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
+    private static void Chosen(nint user, uint id)
+    {
+        if (s_actions.GetValueOrDefault(id) is { } action)
+            Application.Guard(action);
+    }
 }
 
 public sealed record MenuSeparator : MenuEntry

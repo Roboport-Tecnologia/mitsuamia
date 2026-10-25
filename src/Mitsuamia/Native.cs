@@ -29,7 +29,7 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton, Popover, RadioGroup, SplitButton,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton, Popover, RadioGroup, SplitButton, Slider, NumberInput,
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId, Error }
@@ -464,6 +464,10 @@ internal static unsafe partial class Native
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetNumber(uint node, NumberProp prop, double value);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_range")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetRange(uint node, double min, double max, double step);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_strings")]
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool SetStrings(uint node, StringsProp prop, Str* values, nuint count);
@@ -487,6 +491,9 @@ internal static unsafe partial class Native
         public Str Title;
         public byte Enabled;
         public uint Check;
+        public uint Role;
+        public byte HasShortcut;
+        public Shortcut Shortcut;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -505,14 +512,7 @@ internal static unsafe partial class Native
 
     public static bool SetKeys(uint node, IReadOnlyList<Mitsuamia.Shortcut> keys)
     {
-        var native = keys.Select(k => new Shortcut
-        {
-            Key = (uint)k.Key,
-            Ch = k.Code,
-            Primary = k.Primary ? (byte)1 : (byte)0,
-            Shift = k.Shift ? (byte)1 : (byte)0,
-            Alt = k.Alt ? (byte)1 : (byte)0,
-        }).ToArray();
+        var native = keys.Select(ToNative).ToArray();
         fixed (Shortcut* p = native) return SetKeys(node, p, (nuint)native.Length);
     }
 
@@ -545,25 +545,59 @@ internal static unsafe partial class Native
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool SetMenu(uint node, MenuEntry* entries, nuint count);
 
-    public static bool SetContextMenu(uint node, IReadOnlyList<(uint Kind, uint Id, string Title, bool Enabled, uint Check)> entries) =>
+    public static bool SetContextMenu(uint node, IReadOnlyList<FlatMenuEntry> entries) =>
         SetMenuEntries(node, entries, button: false);
 
     /// <summary>A menu button's menu, as <see cref="SetContextMenu"/>'s entries.</summary>
-    public static bool SetMenu(uint node, IReadOnlyList<(uint Kind, uint Id, string Title, bool Enabled, uint Check)> entries) =>
+    public static bool SetMenu(uint node, IReadOnlyList<FlatMenuEntry> entries) =>
         SetMenuEntries(node, entries, button: true);
 
-    private static bool SetMenuEntries(uint node, IReadOnlyList<(uint Kind, uint Id, string Title, bool Enabled, uint Check)> entries, bool button)
+    private static bool SetMenuEntries(uint node, IReadOnlyList<FlatMenuEntry> entries, bool button)
     {
         var titles = entries.Select(e => e.Title).ToArray();
         return WithStrs(titles, (strs, _) =>
         {
             var native = new MenuEntry[entries.Count];
             for (var i = 0; i < native.Length; i++)
-            {
-                var e = entries[i];
-                native[i] = new MenuEntry { Kind = e.Kind, Id = e.Id, Title = strs[i], Enabled = (byte)(e.Enabled ? 1 : 0), Check = e.Check };
-            }
+                native[i] = Entry(entries[i], strs[i]);
             fixed (MenuEntry* p = native) return button ? SetMenu(node, p, (nuint)native.Length) : SetContextMenu(node, p, (nuint)native.Length);
+        });
+    }
+
+    private static MenuEntry Entry(FlatMenuEntry e, Str title) => new()
+    {
+        Kind = e.Kind,
+        Id = e.Id,
+        Title = title,
+        Enabled = (byte)(e.Enabled ? 1 : 0),
+        Check = e.Check,
+        Role = (uint)e.Role,
+        HasShortcut = (byte)(e.Shortcut.HasValue ? 1 : 0),
+        Shortcut = e.Shortcut is { } k ? ToNative(k) : default,
+    };
+
+    private static Shortcut ToNative(Mitsuamia.Shortcut k) => new()
+    {
+        Key = (uint)k.Key,
+        Ch = k.Code,
+        Primary = k.Primary ? (byte)1 : (byte)0,
+        Shift = k.Shift ? (byte)1 : (byte)0,
+        Alt = k.Alt ? (byte)1 : (byte)0,
+    };
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_menu_bar")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetMenuBar(MenuEntry* entries, nuint count, delegate* unmanaged[Cdecl]<nint, uint, void> chosen, nint user);
+
+    public static bool SetMenuBar(IReadOnlyList<FlatMenuEntry> entries, delegate* unmanaged[Cdecl]<nint, uint, void> chosen)
+    {
+        var titles = entries.Select(e => e.Title).ToArray();
+        return WithStrs(titles, (strs, _) =>
+        {
+            var native = new MenuEntry[entries.Count];
+            for (var i = 0; i < native.Length; i++)
+                native[i] = Entry(entries[i], strs[i]);
+            fixed (MenuEntry* p = native) return SetMenuBar(p, (nuint)native.Length, chosen, 0);
         });
     }
 

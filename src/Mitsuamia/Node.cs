@@ -90,9 +90,9 @@ public abstract unsafe class Node
 
     /// <summary>A menu's entries in the C ABI's order, submenus between
     /// their start and end, and its items' actions by the ids given them.</summary>
-    internal static (List<(uint, uint, string, bool, uint)>, Dictionary<uint, Action>) FlattenMenu(IEnumerable<MenuEntry> menu)
+    internal static (List<FlatMenuEntry>, Dictionary<uint, Action>) FlattenMenu(IEnumerable<MenuEntry> menu)
     {
-        var flat = new List<(uint, uint, string, bool, uint)>();
+        var flat = new List<FlatMenuEntry>();
         var actions = new Dictionary<uint, Action>();
         void Flatten(IEnumerable<MenuEntry> entries)
         {
@@ -109,15 +109,15 @@ public abstract unsafe class Node
                             bool on when item.Radio => on ? 4u : 3u,
                             bool on => on ? 2u : 1u,
                         };
-                        flat.Add((0, id, item.Title, item.Enabled, check));
+                        flat.Add(new(0, id, item.Title, item.Enabled, check, item.Role, item.Shortcut));
                         break;
                     case MenuSeparator:
-                        flat.Add((1, 0, "", true, 0));
+                        flat.Add(new(1, 0, "", true, 0));
                         break;
                     case Submenu sub:
-                        flat.Add((2, 0, sub.Title, true, 0));
+                        flat.Add(new(2, 0, sub.Title, true, 0));
                         Flatten(sub.Entries);
-                        flat.Add((3, 0, "", true, 0));
+                        flat.Add(new(3, 0, "", true, 0));
                         break;
                 }
             }

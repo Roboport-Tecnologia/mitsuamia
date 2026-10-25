@@ -626,6 +626,10 @@ public sealed class TextInput : TextField
 {
     public TextInput() : base(Native.Kind.TextInput) { }
 
+    /// <summary>Shows its text, which can be selected and copied, but not
+    /// edited.</summary>
+    public bool ReadOnly { set => Native.Check(Native.SetBool(Id, Native.BoolProp.ReadOnly, value)); }
+
     /// <summary>The user pressed Return.</summary>
     public event Action? Submit;
 
@@ -750,6 +754,54 @@ public sealed class DocumentTabs : Node
 
 /// <summary>The platform's drop-down. One option is always chosen, as GTK's
 /// can't show none.</summary>
+/// <summary>The platform's slider: a number in a range, which snaps to its
+/// step where the platform's sliders snap.</summary>
+public sealed class Slider : Node
+{
+    public Slider(string label = "") : base(Native.Kind.Slider) => Label = label;
+
+    /// <summary>Its accessible name.</summary>
+    public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
+
+    /// <summary>Its range, and its step (0: the platform's). Set it before
+    /// its value.</summary>
+    public void SetRange(double min, double max, double step = 0) => Native.Check(Native.SetRange(Id, min, max, step));
+
+    public double Value { set => Native.Check(Native.SetNumber(Id, Native.NumberProp.Number, value)); }
+
+    /// <summary>The user moved it: its value.</summary>
+    public event Action<double>? Changed;
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        if (e.Kind == Native.EventKind.Changed && e.ValueKind == Native.ValueKind.Number) Changed?.Invoke(e.Number);
+    }
+}
+
+/// <summary>The platform's field for a whole number, with buttons that step
+/// it.</summary>
+public sealed class NumberInput : Node
+{
+    public NumberInput(string label = "") : base(Native.Kind.NumberInput) => Label = label;
+
+    /// <summary>Its accessible name.</summary>
+    public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
+
+    /// <summary>Its range, and what its buttons add (0: 1). Set it before
+    /// its value.</summary>
+    public void SetRange(int min, int max, int step = 0) => Native.Check(Native.SetRange(Id, min, max, step));
+
+    public int Value { set => Native.Check(Native.SetNumber(Id, Native.NumberProp.Number, value)); }
+
+    /// <summary>The user changed it: its value.</summary>
+    public event Action<int>? Changed;
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        if (e.Kind == Native.EventKind.Changed && e.ValueKind == Native.ValueKind.Number) Changed?.Invoke((int)e.Number);
+    }
+}
+
 public sealed class Select : Node
 {
     public Select(string label = "") : base(Native.Kind.Select) => Label = label;
