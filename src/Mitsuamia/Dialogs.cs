@@ -12,14 +12,17 @@ public enum AlertStyle : uint { Info, Warning, Critical }
 public static unsafe class Dialogs
 {
     /// <summary>Shows an alert; the buttons in order of importance, the
-    /// first the default. Answers the index of the button chosen.</summary>
+    /// first the default. <paramref name="destructive"/> is the index of
+    /// the button that destroys something (Delete), drawn so where the
+    /// platform's alerts draw one (red on macOS), or -1 for none. Answers
+    /// the index of the button chosen.</summary>
     public static Task<int> Alert(Window? on, string title, string message, IReadOnlyList<string> buttons,
-        AlertStyle style = AlertStyle.Info)
+        AlertStyle style = AlertStyle.Info, int destructive = -1)
     {
         Application.VerifyAccess();
         var answer = new TaskCompletionSource<int>();
         var user = GCHandle.ToIntPtr(GCHandle.Alloc(answer));
-        Native.Check(Native.Alert(on?.Id ?? 0, title, message, buttons, (uint)style, &Answered, user));
+        Native.Check(Native.Alert(on?.Id ?? 0, title, message, buttons, (uint)style, destructive, &Answered, user));
         return answer.Task;
     }
 

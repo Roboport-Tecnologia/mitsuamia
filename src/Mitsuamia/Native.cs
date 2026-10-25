@@ -406,7 +406,7 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, EntryPoint = "mitsuami_alert")]
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool Alert(uint window, Str title, Str message, Str* buttons, nuint count, uint style,
-        delegate* unmanaged[Cdecl]<nint, nuint, void> answer, nint user);
+        nint destructive, delegate* unmanaged[Cdecl]<nint, nuint, void> answer, nint user);
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_open_file")]
     [return: MarshalAs(UnmanagedType.U1)]
@@ -420,10 +420,10 @@ internal static unsafe partial class Native
         delegate* unmanaged[Cdecl]<nint, Str*, nuint, void> answer, nint user);
 
     public static bool Alert(uint window, string title, string message, IReadOnlyList<string> buttons, uint style,
-        delegate* unmanaged[Cdecl]<nint, nuint, void> answer, nint user)
+        int destructive, delegate* unmanaged[Cdecl]<nint, nuint, void> answer, nint user)
     {
         string[] texts = [title, message];
-        return WithStrs(texts, (t, _) => WithStrs(buttons, (b, n) => Alert(window, t[0], t[1], b, n, style, answer, user)));
+        return WithStrs(texts, (t, _) => WithStrs(buttons, (b, n) => Alert(window, t[0], t[1], b, n, style, destructive, answer, user)));
     }
 
     public static bool OpenFile(uint window, string title, bool folders, bool multiple, string startFolder,
