@@ -7,7 +7,11 @@ public enum TextStyle : uint { LargeTitle, Title, Headline, Body, Callout, Capti
 
 public enum ButtonRole : uint { Normal, Default, Cancel, Destructive }
 
-public enum ButtonStyle : uint { Automatic, Bordered, Borderless }
+/// <summary>How a button is drawn. <c>Prominent</c>: filled with the accent
+/// colour, as the platform marks the action it suggests, without taking
+/// Return as the window's default button does (a plain button where the
+/// platform has none: KDE, a macOS split button).</summary>
+public enum ButtonStyle : uint { Automatic, Bordered, Borderless, Prominent }
 
 public enum HeaderEdge : uint { Automatic, Soft, Hard }
 
