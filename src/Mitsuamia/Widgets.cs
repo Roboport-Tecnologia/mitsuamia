@@ -563,6 +563,12 @@ public abstract class TextField : Node
 
     public string Placeholder { set => Native.Check(Native.SetText(Id, Native.TextProp.Placeholder, value)); }
 
+    /// <summary>What's wrong with its text, or null: the platform marks the
+    /// field where it has a way to (GNOME's red entries), and assistive
+    /// technology reads it as invalid, with this message. Show the message
+    /// by the field too. (A text field, password field or text area.)</summary>
+    public string? Error { set => Native.Check(Native.SetText(Id, Native.TextProp.Error, value ?? "")); }
+
     /// <summary>The name assistive technology reads, when no label is next
     /// to it.</summary>
     public string AccessibleName { set => Native.Check(Native.SetText(Id, Native.TextProp.A11yLabel, value)); }

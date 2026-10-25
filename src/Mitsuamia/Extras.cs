@@ -27,3 +27,23 @@ public sealed class TextAreaWithPlaceholder : Node
 
     public string Placeholder { set => Native.Check(Native.ExtrasTextAreaSetPlaceholder(Id, value)); }
 }
+
+/// <summary>
+/// A field with its error message under it, shown while it has one, as
+/// every platform's apps show theirs; the field is marked too, the
+/// platform's way (GNOME's red entry), for assistive technology as well.
+/// This node is a column holding <paramref name="content"/> (the field, or
+/// a row with it and its buttons), then the message: size and place it.
+/// </summary>
+public sealed class FieldWithError : Node
+{
+    public FieldWithError(Node content, TextField field)
+        : base(Native.CheckNode(Native.ExtrasCreateFieldWithError(content.Id, field.Id)))
+    {
+        // The column holds it: destroyed with it.
+        Forgotten += content.Forget;
+    }
+
+    /// <summary>What's wrong with the field, or null.</summary>
+    public string? Error { set => Native.Check(Native.ExtrasFieldSetError(Id, value ?? "")); }
+}

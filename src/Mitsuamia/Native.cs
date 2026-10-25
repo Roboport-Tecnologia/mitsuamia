@@ -32,7 +32,7 @@ internal static unsafe partial class Native
         PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton, Popover, RadioGroup, SplitButton,
     }
 
-    public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId }
+    public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId, Error }
     public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly, Header, Clickable, SidebarPane, Selectable, PopoverShown, SearchOnReturn }
     public enum NumberProp : uint { Number, EstimatedRowHeight, IconSize, MaxLines }
     public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle, HeaderEdge, Orientation, FontWeight, TabsStyle }
@@ -249,6 +249,19 @@ internal static unsafe partial class Native
     {
         string[] texts = [placeholder];
         return WithStrs(texts, (p, _) => ExtrasTextAreaSetPlaceholder(column, p[0]));
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_extras_create_field_with_error")]
+    public static partial uint ExtrasCreateFieldWithError(uint content, uint field);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_extras_field_set_error")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool ExtrasFieldSetError(uint column, Str error);
+
+    public static bool ExtrasFieldSetError(uint column, string error)
+    {
+        string[] texts = [error];
+        return WithStrs(texts, (e, _) => ExtrasFieldSetError(column, e[0]));
     }
 
     [LibraryImport(Lib, EntryPoint = "mitsuami_drawn_set_semantics")]
