@@ -312,6 +312,10 @@ internal static unsafe partial class Native
     [LibraryImport(Lib, EntryPoint = "mitsuami_last_error")]
     private static partial nuint LastError(byte** ptr);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_menu_bar_place")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetMenuBarPlace(uint place);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_run")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool Run(byte* id, nuint idLen, byte* name, nuint nameLen,
@@ -590,7 +594,13 @@ internal static unsafe partial class Native
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool SetMenuBar(MenuEntry* entries, nuint count, delegate* unmanaged[Cdecl]<nint, uint, void> chosen, nint user);
 
-    public static bool SetMenuBar(IReadOnlyList<FlatMenuEntry> entries, delegate* unmanaged[Cdecl]<nint, uint, void> chosen)
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_window_menu_bar")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetWindowMenuBar(uint window, MenuEntry* entries, nuint count, delegate* unmanaged[Cdecl]<nint, uint, void> chosen, nint user);
+
+    /// <summary>The app's menus, or a window's own (<paramref name="window"/>
+    /// not 0, which comes back as the callback's user).</summary>
+    public static bool SetMenuBar(uint window, IReadOnlyList<FlatMenuEntry> entries, delegate* unmanaged[Cdecl]<nint, uint, void> chosen)
     {
         var titles = entries.Select(e => e.Title).ToArray();
         return WithStrs(titles, (strs, _) =>
@@ -598,7 +608,10 @@ internal static unsafe partial class Native
             var native = new MenuEntry[entries.Count];
             for (var i = 0; i < native.Length; i++)
                 native[i] = Entry(entries[i], strs[i]);
-            fixed (MenuEntry* p = native) return SetMenuBar(p, (nuint)native.Length, chosen, 0);
+            fixed (MenuEntry* p = native)
+                return window == 0
+                    ? SetMenuBar(p, (nuint)native.Length, chosen, 0)
+                    : SetWindowMenuBar(window, p, (nuint)native.Length, chosen, (nint)window);
         });
     }
 

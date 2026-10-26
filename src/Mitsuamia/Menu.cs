@@ -26,24 +26,30 @@ internal readonly record struct FlatMenuEntry(uint Kind, uint Id, string Title, 
 
 /// <summary>
 /// The app's menu bar: the platform's (macOS's, with the roles' items in
-/// the app menu), or however it shows an app's menus. Set it again to
-/// change it.
+/// the app menu), or however it shows an app's menus; or a window's own
+/// menus, shown with the app's, and only in that window where each window
+/// has its menus (Windows, GNOME, KDE). Set it again to change it.
 /// </summary>
 public static unsafe class MenuBar
 {
-    private static Dictionary<uint, Action> s_actions = [];
+    // By window: 0 is the app's.
+    private static readonly Dictionary<uint, Dictionary<uint, Action>> s_actions = [];
 
-    public static void Set(IReadOnlyList<Submenu> menus)
+    public static void Set(IReadOnlyList<Submenu> menus) => Set(0, menus);
+
+    public static void Set(Window window, IReadOnlyList<Submenu> menus) => Set(window.Id, menus);
+
+    private static void Set(uint window, IReadOnlyList<Submenu> menus)
     {
         var (flat, actions) = Node.FlattenMenu(menus);
-        s_actions = actions;
-        Native.Check(Native.SetMenuBar(flat, &Chosen));
+        s_actions[window] = actions;
+        Native.Check(Native.SetMenuBar(window, flat, &Chosen));
     }
 
     [System.Runtime.InteropServices.UnmanagedCallersOnly(CallConvs = [typeof(System.Runtime.CompilerServices.CallConvCdecl)])]
     private static void Chosen(nint user, uint id)
     {
-        if (s_actions.GetValueOrDefault(id) is { } action)
+        if (s_actions.GetValueOrDefault((uint)user)?.GetValueOrDefault(id) is { } action)
             Application.Guard(action);
     }
 }

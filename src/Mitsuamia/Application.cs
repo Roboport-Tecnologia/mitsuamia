@@ -4,6 +4,13 @@ using System.Text;
 
 namespace Mitsuamia;
 
+/// <summary>Where Windows shows the app's menus: a bar on its own row under
+/// the title bar, a bar in the title bar after the title or at its start,
+/// or a button at the title bar's start that opens them, as Visual
+/// Studio's compact menu, beside document tabs there. The other platforms
+/// have their own place for menus.</summary>
+public enum MenuBarPlace : uint { BelowTitleBar, InTitleBar, InTitleBarStart, ButtonInTitleBar }
+
 /// <summary>
 /// Runs the app on mitsuami. Call <see cref="Run"/> from <c>Main</c>: it
 /// takes the main thread, which AppKit needs, until the last window closes.
@@ -23,6 +30,10 @@ public static unsafe class Application
     /// <summary>Whether <see cref="Run"/> has started the run loop, so
     /// <see cref="Post"/> has somewhere to post to.</summary>
     public static bool IsRunning => _uiThread is not null;
+
+    /// <summary>Where Windows shows the app's menus; set before
+    /// <see cref="Run"/>.</summary>
+    public static MenuBarPlace MenuBarPlace { get; set; }
 
     public static void Run(string id, string name, Action setup)
     {
@@ -45,6 +56,8 @@ public static unsafe class Application
             return;
         }
         _setup = setup;
+        // mitsuami keeps it for the thread that runs, which may be this new one.
+        Native.Check(Native.SetMenuBarPlace((uint)MenuBarPlace));
         var idBytes = Encoding.UTF8.GetBytes(id);
         var nameBytes = Encoding.UTF8.GetBytes(name);
         fixed (byte* i = idBytes)
