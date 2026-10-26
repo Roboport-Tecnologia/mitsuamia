@@ -5,9 +5,12 @@ namespace Mitsuamia;
 /// <summary>A column of a <see cref="TableView{T}"/>: its header's title,
 /// the node each item shows in its cell (built when the platform shows its
 /// row), the width it starts at (0: the platform's), whether it takes the
-/// room left, and whether pressing its header sorts.</summary>
+/// room left, whether pressing its header sorts, and whether its cells fill
+/// their rows: as high as the row the platform makes and without its
+/// padding, for a drawing that joins from row to row (draw to the cell's
+/// size: rows are higher on some platforms).</summary>
 public sealed record TableColumn<T>(string Title, Func<T, Node> Cell, float Width = 0, bool Expand = false,
-    bool Sortable = false);
+    bool Sortable = false, bool FillsRow = false);
 
 /// <summary>
 /// The platform's own table control: rows of cells under column headers,
@@ -40,7 +43,7 @@ public sealed unsafe class TableView<T> : ListView<T> where T : class
             User = GCHandle.ToIntPtr(GCHandle.Alloc(box)),
             Still = itemAnimations ? 0u : 1u,
         };
-        var data = columns.Select(c => (c.Title, c.Width, c.Expand, c.Sortable)).ToArray();
+        var data = columns.Select(c => (c.Title, c.Width, c.Expand, c.Sortable, c.FillsRow)).ToArray();
         return Native.CheckNode(Native.CreateTable(callbacks, data));
     }
 

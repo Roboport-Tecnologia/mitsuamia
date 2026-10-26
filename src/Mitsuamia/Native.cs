@@ -90,6 +90,7 @@ internal static unsafe partial class Native
         public float Width;
         [MarshalAs(UnmanagedType.U1)] public bool Expand;
         [MarshalAs(UnmanagedType.U1)] public bool Sortable;
+        [MarshalAs(UnmanagedType.U1)] public bool FillsRow;
     }
 
     [StructLayout(LayoutKind.Sequential)]
@@ -115,15 +116,15 @@ internal static unsafe partial class Native
     private static partial uint CreateTable(TableCallbacks callbacks, TableColumn* columns, nuint count);
 
     /// <summary>Columns are titles, widths (0: the platform's), whether
-    /// each expands and sorts.</summary>
-    public static uint CreateTable(TableCallbacks callbacks, IReadOnlyList<(string Title, float Width, bool Expand, bool Sortable)> columns)
+    /// each expands and sorts, and whether its cells fill their rows.</summary>
+    public static uint CreateTable(TableCallbacks callbacks, IReadOnlyList<(string Title, float Width, bool Expand, bool Sortable, bool FillsRow)> columns)
     {
         uint id = 0;
         WithStrs(columns.Select(c => c.Title).ToArray(), (titles, n) =>
         {
             var native = new TableColumn[(int)n];
             for (var i = 0; i < native.Length; i++)
-                native[i] = new TableColumn { Title = titles[i], Width = columns[i].Width, Expand = columns[i].Expand, Sortable = columns[i].Sortable };
+                native[i] = new TableColumn { Title = titles[i], Width = columns[i].Width, Expand = columns[i].Expand, Sortable = columns[i].Sortable, FillsRow = columns[i].FillsRow };
             fixed (TableColumn* p = native) id = CreateTable(callbacks, p, n);
             return id != 0;
         });
