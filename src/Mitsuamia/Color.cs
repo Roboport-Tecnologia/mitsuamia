@@ -36,7 +36,7 @@ public readonly record struct Color
     /// <summary>A fixed colour, the same in light and dark.</summary>
     public static Color Rgba(byte r, byte g, byte b, byte a = 255) => new(9, r, g, b, a);
 
-    internal bool Set(uint node) => Native.SetColor(node, 0, _semantic, R, G, B, A);
+    internal bool Set(uint node, uint prop = 0) => Native.SetColor(node, prop, _semantic, R, G, B, A);
 
     internal Native.Color ToNative() => new() { Semantic = _semantic, R = R, G = G, B = B, A = A };
 }

@@ -799,6 +799,30 @@ public sealed class Slider : Node
     }
 }
 
+/// <summary>The platform's colour well: a button showing a colour, which
+/// opens the platform's own way to pick another (the colour panel on macOS).
+/// Opaque, fixed colours only.</summary>
+public sealed class ColorWell : Node
+{
+    public ColorWell(string label = "") : base(Native.Kind.ColorWell) => Label = label;
+
+    /// <summary>Its accessible name.</summary>
+    public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
+
+    /// <summary>The colour it shows: a fixed one (<see cref="Color.Rgba"/>),
+    /// its alpha ignored.</summary>
+    public Color Value { set => Native.Check(value.Set(Id, 1)); }
+
+    /// <summary>The user picked a colour, opaque.</summary>
+    public event Action<Color>? Changed;
+
+    private protected override void OnEvent(Native.Event e)
+    {
+        if (e.Kind == Native.EventKind.Changed && e.ValueKind == Native.ValueKind.Color)
+            Changed?.Invoke(Color.Rgba((byte)(e.Index >> 16), (byte)(e.Index >> 8), (byte)e.Index));
+    }
+}
+
 /// <summary>The platform's field for a whole number, with buttons that step
 /// it.</summary>
 public sealed class NumberInput : Node

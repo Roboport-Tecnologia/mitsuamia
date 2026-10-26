@@ -29,7 +29,7 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton, Popover, RadioGroup, SplitButton, Slider, NumberInput,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton, Popover, RadioGroup, SplitButton, Slider, NumberInput, ColorWell,
     }
 
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId, Error }
@@ -43,7 +43,7 @@ internal static unsafe partial class Native
         Click, Changed, Submit, FocusIn, FocusOut, CloseRequested, Search, TabCloseRequested, TabMoved, NewTabRequested,
         ContextMenuItem, DropHover, FilesDropped, Pointer, A11yAction, MenuItem, PopoverShownChanged, SuggestionChosen, Key, Hover,
     }
-    public enum ValueKind : uint { None, Text, Bool, Number, Index }
+    public enum ValueKind : uint { None, Text, Bool, Number, Index, Color }
 
     [StructLayout(LayoutKind.Sequential)]
     public struct Event
