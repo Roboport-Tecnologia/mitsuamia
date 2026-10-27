@@ -32,6 +32,10 @@ public readonly record struct Color
     public static Color Error { get; } = new(6);
     public static Color Warning { get; } = new(7);
     public static Color Success { get; } = new(8);
+    /// <summary>For text and icons on an <see cref="Accent"/> fill (a
+    /// badge): the platform's pairing, dark on a light accent where it
+    /// makes one.</summary>
+    public static Color OnAccent { get; } = new(11);
 
     /// <summary>A fixed colour, the same in light and dark.</summary>
     public static Color Rgba(byte r, byte g, byte b, byte a = 255) => new(9, r, g, b, a);
