@@ -43,3 +43,18 @@ public sealed class Icon : Node
     /// one it's decorative.</summary>
     public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
 }
+
+/// <summary>A file's or folder's own icon, as the platform's file manager
+/// shows it: a folder's, a document's by its type. A path that doesn't
+/// exist shows a generic document on macOS and nothing elsewhere.</summary>
+public sealed class FileIcon : Node
+{
+    public FileIcon(string path) : base(Native.Kind.FileIcon) => Path = path;
+
+    /// <summary>The file or folder, read when it's set.</summary>
+    public string Path { set => Native.Check(Native.SetText(Id, Native.TextProp.File, value)); }
+
+    /// <summary>Its square's side, in points; otherwise the platform's
+    /// small icons' (16).</summary>
+    public float Size { set => Native.Check(Native.SetNumber(Id, Native.NumberProp.IconSize, value)); }
+}

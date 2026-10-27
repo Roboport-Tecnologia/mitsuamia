@@ -29,10 +29,10 @@ internal static unsafe partial class Native
     public enum Kind : uint
     {
         Container, Text, Button, ToggleButton, Checkbox, Switch, TextInput,
-        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton, Popover, RadioGroup, SplitButton, Slider, NumberInput, ColorWell,
+        PasswordInput, SearchInput, TextArea, Separator, Spinner, Progress, DocumentTabs, Select, Icon, Split, Tabs, Image, MenuButton, Popover, RadioGroup, SplitButton, Slider, NumberInput, ColorWell, FileIcon,
     }
 
-    public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId, Error }
+    public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId, Error, File }
     public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly, Header, Clickable, SidebarPane, Selectable, PopoverShown, SearchOnReturn, ClickThrough, ReadOnly, LineWrap, FollowsEnd, Hover }
     public enum NumberProp : uint { Number, EstimatedRowHeight, IconSize, MaxLines }
     public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle, HeaderEdge, Orientation, FontWeight, TabsStyle }
