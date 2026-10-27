@@ -44,12 +44,35 @@ public sealed class Icon : Node
     public string Label { set => Native.Check(Native.SetText(Id, Native.TextProp.Label, value)); }
 }
 
+/// <summary>Where a <see cref="FileIcon"/> gets its icon.</summary>
+public enum FileLookup : uint
+{
+    /// <summary>The file or folder on disk: an app's own icon, a folder's
+    /// custom one, a document's by its type.</summary>
+    Disk,
+    /// <summary>A file of the type its name says, with nothing read: for
+    /// files that aren't on disk.</summary>
+    FileName,
+    /// <summary>A plain folder, with nothing read.</summary>
+    Folder,
+}
+
 /// <summary>A file's or folder's own icon, as the platform's file manager
 /// shows it: a folder's, a document's by its type. A path that doesn't
-/// exist shows a generic document on macOS and nothing elsewhere.</summary>
+/// exist shows a generic document on macOS and nothing elsewhere, unless
+/// it goes by its name (<see cref="Lookup"/>).</summary>
 public sealed class FileIcon : Node
 {
-    public FileIcon(string path) : base(Native.Kind.FileIcon) => Path = path;
+    public FileIcon(string path, FileLookup lookup = FileLookup.Disk) : base(Native.Kind.FileIcon)
+    {
+        if (lookup != FileLookup.Disk)
+            Lookup = lookup;
+        Path = path;
+    }
+
+    /// <summary>Where its icon comes from: the file on disk, or only its
+    /// name.</summary>
+    public FileLookup Lookup { set => Native.Check(Native.SetEnum(Id, Native.EnumProp.FileLookup, (uint)value)); }
 
     /// <summary>The file or folder, read when it's set.</summary>
     public string Path { set => Native.Check(Native.SetText(Id, Native.TextProp.File, value)); }

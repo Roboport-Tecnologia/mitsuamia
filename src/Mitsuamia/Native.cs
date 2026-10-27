@@ -35,7 +35,7 @@ internal static unsafe partial class Native
     public enum TextProp : uint { Text, Label, Title, Value, Placeholder, A11yLabel, Tooltip, Icon, TestId, Error, File }
     public enum BoolProp : uint { Enabled, Checked, TabsClosable, TabsReorderable, NewTabButton, IconOnly, Header, Clickable, SidebarPane, Selectable, PopoverShown, SearchOnReturn, ClickThrough, ReadOnly, LineWrap, FollowsEnd, Hover }
     public enum NumberProp : uint { Number, EstimatedRowHeight, IconSize, MaxLines }
-    public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle, HeaderEdge, Orientation, FontWeight, TabsStyle }
+    public enum EnumProp : uint { TextStyle, ButtonRole, ButtonStyle, SelectionMode, ListStyle, DocumentTabsStyle, HeaderEdge, Orientation, FontWeight, TabsStyle, FileLookup }
     public enum StringsProp : uint { TabTitles, Options }
     public enum IndexProp : uint { SelectedIndex }
     public enum EventKind : uint
