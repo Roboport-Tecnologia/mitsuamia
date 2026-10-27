@@ -152,6 +152,68 @@ internal static unsafe partial class Native
     public static bool ListSetKeys(uint list, IReadOnlyList<string> keys) => WithStrs(keys, (p, n) => ListSetKeys(list, p, n));
     public static bool ListSetSelected(uint list, IReadOnlyList<string> keys) => WithStrs(keys, (p, n) => ListSetSelected(list, p, n));
 
+    [StructLayout(LayoutKind.Sequential)]
+    public struct TreeCallbacks
+    {
+        public delegate* unmanaged[Cdecl]<nint, uint, byte*, nuint, uint> BuildRow;
+        public delegate* unmanaged[Cdecl]<nint, uint, uint, void> ReleaseRow;
+        public delegate* unmanaged[Cdecl]<nint, uint, void> SelectionChanged;
+        public delegate* unmanaged[Cdecl]<nint, uint, byte*, nuint, void> Activated;
+        public delegate* unmanaged[Cdecl]<nint, uint, void> ExpandedChanged;
+        public nint User;
+        public uint Still;
+        public uint Moves;
+        public delegate* unmanaged[Cdecl]<nint, uint, Str*, nuint, uint, byte*, nuint, void> Moved;
+    }
+
+    [StructLayout(LayoutKind.Sequential)]
+    private struct TreeNode
+    {
+        public Str Key;
+        public Str Parent;
+        public uint Opens;
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_create_tree")]
+    public static partial uint CreateTree(TreeCallbacks callbacks);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_tree_set_nodes")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool TreeSetNodes(uint tree, TreeNode* nodes, nuint count);
+
+    /// <summary>Every node: its key, its parent's (empty at the top), and
+    /// whether it opens without children.</summary>
+    public static bool TreeSetNodes(uint tree, IReadOnlyList<(string Key, string Parent, bool Opens)> nodes)
+    {
+        var strings = nodes.Select(n => n.Key).Concat(nodes.Select(n => n.Parent)).ToArray();
+        return WithStrs(strings, (strs, _) =>
+        {
+            var native = new TreeNode[nodes.Count];
+            for (var i = 0; i < native.Length; i++)
+                native[i] = new TreeNode { Key = strs[i], Parent = strs[nodes.Count + i], Opens = nodes[i].Opens ? 1u : 0u };
+            fixed (TreeNode* p = native) return TreeSetNodes(tree, p, (nuint)native.Length);
+        });
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_tree_set_expanded")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool TreeSetExpanded(uint tree, Str* keys, nuint count);
+
+    public static bool TreeSetExpanded(uint tree, IReadOnlyList<string> keys) => WithStrs(keys, (p, n) => TreeSetExpanded(tree, p, n));
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_tree_expanded_count")]
+    public static partial nuint TreeExpandedCount(uint tree);
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_tree_expanded_key")]
+    private static partial nuint TreeExpandedKey(uint tree, nuint index, byte** ptr);
+
+    public static string TreeExpandedKey(uint tree, nuint index)
+    {
+        byte* ptr;
+        var len = TreeExpandedKey(tree, index, &ptr);
+        return Utf8(ptr, len);
+    }
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_list_scroll_to")]
     [return: MarshalAs(UnmanagedType.U1)]
     private static partial bool ListScrollTo(uint list, Str key);

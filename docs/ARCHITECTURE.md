@@ -231,6 +231,20 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
      collapses a hidden pane, as the platforms' own splits do. The diff
      pane waits for the code view (4). Ran on AppKit in captures; not
      yet tried by hand.
+   - Trees (2026-10-27): upstream's trees (branches, tags, submodules,
+     changes, a commit's files, the groups to move a repository into) are
+     `TreeView`s, mitsuami's `Tree`: the platform draws the disclosures,
+     indents the levels and opens rows with its keys, where the port had
+     flattened them into a `ListView` with a drawn chevron in a button per
+     row, which GTK's padding crowded. A `TreeView` takes the roots and an
+     item's children (null for a leaf, so a list or grid of changes is a
+     tree no row of which opens), keeps the open items both ways
+     (`ExpandedItems`, `ExpandedChanged`), and counts the rows that show
+     as its `ItemCount`, which the sidebar's groups size by. Which folders
+     are open stays the view model's, as upstream's. The welcome page's
+     repositories stay a `ListView`: its rows are dragged into groups,
+     and `Tree` doesn't move rows yet. Ran on GTK (Broadway), opened and
+     closed with the pointer.
 4. **Diffs, blame and conflicts:** the code view, the largest single piece.
 5. **The remaining popups and windows,** the converter making the first pass.
 

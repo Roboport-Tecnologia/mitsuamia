@@ -87,15 +87,21 @@ public abstract unsafe class ListView : Node
     private protected abstract void OnSelectionChanged(IReadOnlyList<string> keys);
     private protected abstract void OnActivated(string key);
     private protected abstract void OnMoved(IReadOnlyList<string> keys, RowDropKind kind, string key);
+    private protected virtual void OnExpandedChanged(IReadOnlyList<string> keys) { }
 
     private protected void SetKeys(IReadOnlyList<string> keys)
     {
         Native.Check(Native.ListSetKeys(Id, keys));
-        ItemCount = keys.Count;
+        SetItemCount(keys.Count);
+    }
+
+    private protected void SetItemCount(int count)
+    {
+        ItemCount = count;
         ItemsChanged?.Invoke();
     }
 
-    /// <summary>How many items it has.</summary>
+    /// <summary>How many items it has; a tree's rows that show.</summary>
     public int ItemCount { get; private set; }
 
     /// <summary>Its items changed: for a list as tall as its rows.</summary>
@@ -103,7 +109,7 @@ public abstract unsafe class ListView : Node
     private protected void SetSelectedKeys(IReadOnlyList<string> keys) => Native.Check(Native.ListSetSelected(Id, keys));
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static uint BuildRow(nint user, uint list, byte* key, nuint len)
+    private protected static uint BuildRow(nint user, uint list, byte* key, nuint len)
     {
         uint id = 0;
         Application.Guard(() =>
@@ -152,7 +158,7 @@ public abstract unsafe class ListView : Node
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
-    private static void MovedCallback(nint user, uint list, Native.Str* keys, nuint count, uint to, byte* key, nuint len)
+    private protected static void MovedCallback(nint user, uint list, Native.Str* keys, nuint count, uint to, byte* key, nuint len)
     {
         var moved = new string[(int)count];
         for (var i = 0; i < moved.Length; i++) moved[i] = Native.Utf8(keys[i].Ptr, keys[i].Len);
@@ -164,6 +170,19 @@ public abstract unsafe class ListView : Node
     private protected static void SortedCallback(nint user, uint table, nuint column, byte descending)
     {
         Application.Guard(() => Of(user)?.OnSorted((int)column, descending != 0));
+    }
+
+    [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
+    private protected static void ExpandedChangedCallback(nint user, uint tree)
+    {
+        Application.Guard(() =>
+        {
+            if (Of(user) is not { } view) return;
+            var count = Native.TreeExpandedCount(tree);
+            var keys = new string[(int)count];
+            for (nuint i = 0; i < count; i++) keys[i] = Native.TreeExpandedKey(tree, i);
+            view.OnExpandedChanged(keys);
+        });
     }
 
     [UnmanagedCallersOnly(CallConvs = [typeof(CallConvCdecl)])]
