@@ -737,6 +737,30 @@ internal static unsafe partial class Native
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetWrap(uint node, [MarshalAs(UnmanagedType.U1)] bool wrap);
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_grid_rows")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetGridRows(uint node, Track* rows, nuint count);
+
+    public static bool SetGridRows(uint node, IReadOnlyList<Track> rows)
+    {
+        var tracks = rows.ToArray();
+        fixed (Track* p = tracks) return SetGridRows(node, p, (nuint)tracks.Length);
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_grid_columns")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    private static partial bool SetGridColumns(uint node, Track* columns, nuint count);
+
+    public static bool SetGridColumns(uint node, IReadOnlyList<Track> columns)
+    {
+        var tracks = columns.ToArray();
+        fixed (Track* p = tracks) return SetGridColumns(node, p, (nuint)tracks.Length);
+    }
+
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_basis")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetBasis(uint node, Length basis);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_shrink")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetShrink(uint node, float shrink);

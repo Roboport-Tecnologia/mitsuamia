@@ -33,7 +33,28 @@ public readonly record struct Length
     /// <summary>Times the platform's body font size, which follows the
     /// user's text size.</summary>
     public static Length Rem(float times) => new(5, times);
+    /// <summary>The node's natural size, as CSS's <c>max-content</c>: for a
+    /// list's <see cref="Node.MinHeight"/> or <see cref="Node.MaxHeight"/>,
+    /// as high as its rows, so a list that grows from nothing stops there.
+    /// Elsewhere it's auto.</summary>
+    public static Length MaxContent => new(6, 0);
 
     public static implicit operator Length(float points) => Points(points);
     public static implicit operator Length(Spacing spacing) => Token(spacing);
+}
+
+/// <summary>
+/// A grid track: as small as <c>Min</c> and as large as <c>Max</c>, as
+/// CSS's <c>minmax()</c>. <c>new Track(0, Length.MaxContent)</c> grows from
+/// nothing up to what's in it, so lists in such rows share the grid's
+/// height and stop at their rows. A plain length is a fixed track.
+/// </summary>
+[StructLayout(LayoutKind.Sequential)]
+public readonly record struct Track(Length Min, Length Max)
+{
+    /// <summary>As high (or wide) as what's in it.</summary>
+    public static Track Auto => default;
+
+    public static implicit operator Track(Length size) => new(size, size);
+    public static implicit operator Track(float points) => new(points, points);
 }

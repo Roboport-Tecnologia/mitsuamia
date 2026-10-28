@@ -279,6 +279,12 @@ public abstract unsafe class Node
 
     public float Grow { set => Native.Check(Native.SetGrow(Id, value)); }
 
+    /// <summary>Where its size starts before its container shares out the
+    /// room left or takes back what's missing (CSS's <c>flex-basis</c>):
+    /// auto, its own size, by default; 0 to share the room by
+    /// <see cref="Grow"/> alone.</summary>
+    public Length Basis { set => Native.Check(Native.SetBasis(Id, value)); }
+
     /// <summary>How much it gives up when its container's children don't
     /// fit, against the others (weighted by their sizes); 1 by default, 0
     /// never.</summary>

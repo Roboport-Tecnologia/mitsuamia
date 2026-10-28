@@ -38,6 +38,14 @@ public class Container : Node, IEnumerable<Node>
 
     public Length Gap { set => Native.Check(Native.SetGap(Id, value)); }
 
+    /// <summary>Makes it a grid with these rows, which its children fill in
+    /// order, one to a row.</summary>
+    public IReadOnlyList<Track> Rows { set => Native.Check(Native.SetGridRows(Id, value)); }
+
+    /// <summary>Makes it a grid with these columns, which its children fill
+    /// in order, a row at a time.</summary>
+    public IReadOnlyList<Track> Columns { set => Native.Check(Native.SetGridColumns(Id, value)); }
+
     /// <summary>Children that don't fit go on to another line (a row's) or
     /// column (a column's), as chips and tags do.</summary>
     public bool Wrap { set => Native.Check(Native.SetWrap(Id, value)); }
