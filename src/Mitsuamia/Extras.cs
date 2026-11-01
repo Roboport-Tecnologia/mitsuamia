@@ -47,3 +47,18 @@ public sealed class FieldWithError : Node
     /// <summary>What's wrong with the field, or null.</summary>
     public string? Error { set => Native.Check(Native.ExtrasFieldSetError(Id, value ?? "")); }
 }
+
+/// <summary>
+/// A node an app's own native library made, in one library with mitsuami's:
+/// its functions place, size and destroy it as any other. For custom
+/// widgets over a C ABI of the app's, as extras' are.
+/// </summary>
+public sealed class ForeignNode : Node
+{
+    /// <param name="id">What the library's create function returned; 0
+    /// throws its last error.</param>
+    public ForeignNode(uint id) : base(Native.CheckNode(id)) { }
+
+    /// <summary>Throws the library's last error unless <paramref name="ok"/>.</summary>
+    public static void Check(bool ok) => Native.Check(ok);
+}

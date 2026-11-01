@@ -142,8 +142,10 @@ releases can still be merged. Surveyed at `cb11d687` (v2026.22):
   `bemtvi-gui` already runs on mitsuami (a `GpuSurface` painted with wgpu);
   what embedding needs:
   - a widget, not a window: an editor surface several of which share a
-    window (a side-by-side diff, the conflict editor's three panes), from a
-    crate in bemtvi's repository with a C ABI of its own;
+    window (a side-by-side diff, the conflict editor's three panes), from
+    `mitsuami/codeview` in the port's repository, one C ABI library with
+    mitsuami's and extras', and the features Lua plugins beside it rather
+    than `bemtvi-diff`;
   - the server in process, one per app, with a session per surface;
   - diffs through the `bemtvi-diff` plugin, a Meld-style renderer you feed
     a diff to: 2 or 3 read-only panes in lockstep, tints and intra-line
