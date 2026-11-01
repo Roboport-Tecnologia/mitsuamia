@@ -12,10 +12,11 @@ A proof of concept so far: `docs/ARCHITECTURE.md` has the plan.
 
 ## Trying it
 
-Build mitsuami's C ABI (`mitsuami-ffi`), point `MITSUAMI_FFI` at it, and
-run a sample:
+Build the C ABI from mitsuami-extras, whose library has mitsuami's in it and
+whose manifest pins the mitsuami release, point `MITSUAMI_FFI` at it, and run
+a sample:
 
 ```sh
-cargo build -p mitsuami-ffi --manifest-path ../rust-ui-toolkit/Cargo.toml
-MITSUAMI_FFI=../rust-ui-toolkit/target/debug/libmitsuami_ffi.dylib dotnet run --project samples/Clone
+cargo build -p mitsuami-extras-ffi --manifest-path ../mitsuami-extras/Cargo.toml
+MITSUAMI_FFI=../mitsuami-extras/target/debug/libmitsuami_extras_ffi.dylib dotnet run --project samples/Clone
 ```
