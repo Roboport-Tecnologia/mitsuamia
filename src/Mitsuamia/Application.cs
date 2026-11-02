@@ -76,6 +76,15 @@ public static unsafe class Application
         Guard(() => _setup!());
     }
 
+    /// <summary>Makes this thread the UI thread, for a host that made its own
+    /// <c>Ui</c> and attached it (mitsuami-ffi's <c>attach</c>) instead of calling
+    /// <see cref="Run"/>: tests on the headless backend.</summary>
+    public static void UseThisThread()
+    {
+        _uiThread = Thread.CurrentThread;
+        SynchronizationContext.SetSynchronizationContext(new UiSynchronizationContext());
+    }
+
     /// <summary>Runs <paramref name="action"/> on the UI thread soon. Any
     /// thread may call it.</summary>
     public static void Post(Action action)
