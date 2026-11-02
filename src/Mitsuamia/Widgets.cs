@@ -249,10 +249,52 @@ public sealed class Window : Node
     /// <summary>The user closed it; mitsuami has destroyed it.</summary>
     public event Action? Closed;
 
+    /// <summary>
+    /// Asked when the user closes it (its close button, Escape on a modal one, quitting), and it
+    /// closes only on true. It stays up meanwhile, so this can show a dialog. Not asked for
+    /// <see cref="Node.Destroy"/>, which is the app's own decision. Null, it just closes.
+    /// </summary>
+    public Func<Task<bool>>? CanClose
+    {
+        get => _canClose;
+        set
+        {
+            _canClose = value;
+            Native.Check(Native.SetAsksBeforeClosing(Id, value != null));
+        }
+    }
+
+    private Func<Task<bool>>? _canClose;
+    private bool _asking;
+
     private protected override void OnEvent(Native.Event e)
     {
         if (e.Kind != Native.EventKind.CloseRequested) return;
+        if (_canClose is { } canClose)
+        {
+            Ask(canClose);
+            return;
+        }
         Forget();
+        Closed?.Invoke();
+    }
+
+    private async void Ask(Func<Task<bool>> canClose)
+    {
+        // Pressing the close button again while it asks is the same request.
+        if (_asking) return;
+        _asking = true;
+        var gone = false;
+        Forgotten += () => gone = true;
+        try
+        {
+            if (!await canClose() || gone) return;
+        }
+        finally
+        {
+            _asking = false;
+        }
+        Destroy();
         Closed?.Invoke();
     }
 }

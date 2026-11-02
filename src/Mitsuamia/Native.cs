@@ -466,6 +466,10 @@ internal static unsafe partial class Native
         return WithStrs(texts, (t, _) => Launch(window, t[0], url));
     }
 
+    [LibraryImport(Lib, EntryPoint = "mitsuami_set_asks_before_closing")]
+    [return: MarshalAs(UnmanagedType.U1)]
+    public static partial bool SetAsksBeforeClosing(uint window, [MarshalAs(UnmanagedType.U1)] bool asks);
+
     [LibraryImport(Lib, EntryPoint = "mitsuami_set_modal")]
     [return: MarshalAs(UnmanagedType.U1)]
     public static partial bool SetModal(uint window, uint owner, uint modality);
